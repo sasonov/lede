@@ -81,8 +81,16 @@ satisfy the linter (a news tool must not misquote its source).
 ```bash
 # Write the draft to a temp file first, then lint it. --config is REQUIRED
 # (vale searches upward from the target file, and the draft lives elsewhere).
-vale --config="<skill-dir>/.vale.ini" /path/to/draft.md
+# Hermes Docker installs may keep user binaries outside PATH.
+VALE_BIN="$(command -v vale 2>/dev/null || true)"
+[ -n "$VALE_BIN" ] || VALE_BIN="$HOME/.local/bin/vale"
+"$VALE_BIN" --config="<skill-dir>/.vale.ini" /path/to/draft.md
 ```
+
+For this Hermes profile, the verified skill directory is
+`/opt/data/skills/communication/lede` and Vale is installed at
+`/opt/data/home/.local/bin/vale`. Continue to resolve paths dynamically when
+possible so the skill remains portable.
 
 - **Clean** → proceed.
 - **Alerts** (after the quote/name waiver) → revise those lines, run **once**
