@@ -1,0 +1,33 @@
+extends: existence
+message: "AI-slop tell: '%s' — cut it or say it plainly."
+level: error
+ignorecase: true
+tokens:
+  - delve
+  - tapestry
+  - testament to
+  - seamless
+  - seamlessly
+  - ever-evolving
+  - ever-changing
+  - game-?changer
+  - game-changing
+  - cutting-edge
+  - state-of-the-art
+  - in today's fast-paced world
+  - dive into
+  - deep dive
+  - realm of
+  - boasts
+  - nestled
+  - plethora
+  - myriad
+  - paradigm shift
+  - synergy
+  - unlock the
+  - unleash
+  - harness the power
+  - at the end of the day
+  - it's worth noting
+  - needless to say
+  - when it comes to

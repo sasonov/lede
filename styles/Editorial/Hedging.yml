@@ -1,0 +1,20 @@
+extends: existence
+message: "Hedge/filler: '%s' — delete it, the sentence is stronger without."
+level: error
+ignorecase: true
+tokens:
+  - very
+  - really
+  - quite
+  - actually
+  - basically
+  - literally
+  - simply
+  - arguably
+  - somewhat
+  - fairly
+  - rather
+  - a number of
+  - in order to
+  - kind of
+  - sort of

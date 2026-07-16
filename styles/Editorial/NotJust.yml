@@ -1,0 +1,10 @@
+extends: existence
+message: "Overused AI construction: '%s' — rewrite as a direct statement."
+level: error
+ignorecase: true
+nonword: true
+tokens:
+  - "not just .{0,25}? but"
+  - "isn't just \\w+.{0,25}it's"
+  - "it's not about \\w+.{0,25}it's about"
+  - "more than just"
