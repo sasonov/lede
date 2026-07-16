@@ -130,10 +130,19 @@ If either prints `OVER` (nonzero exit), split into numbered parts (`(1/2)`) and
 run `count` on **each part** until all pass; when the two channels split
 differently, label each block by platform + part.
 
-Emit the Discord message, then the Telegram message, each in its own fenced block
-(use `~~~` if the content itself contains ```` ``` ````). Nothing around them —
-no counts, no commentary; the user copies and sends as-is. Add a line only when
-something needs action: an over-limit split, or unresolved vale alerts.
+Emit two clearly labeled sections in this exact order:
+
+1. Write `**Discord**` as a title on its own line **outside and above** the fenced
+   block, then put only the copyable Discord message inside the fence.
+2. Write `**Telegram**` as a title on its own line **outside and above** the fenced
+   block, then put only the copyable Telegram message inside the fence.
+
+The platform title must never appear inside the fenced message because the user
+copies the block contents directly. Use `~~~` if the message itself contains
+```` ``` ````. The platform titles are mandatory—never rely on block order to
+identify the outputs. Apart from these titles, include no counts or commentary.
+Add an extra line only when something needs action: an over-limit split or
+unresolved Vale alerts.
 
 ### Links, images, code in the source
 - **URLs** → Discord `[label](url)`; Telegram bare URL.
