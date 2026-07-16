@@ -109,7 +109,9 @@ markers to Unicode bold in one pass:
 python "<skill-dir>/scripts/lede.py" bold --file telegram-draft.txt
 ```
 
-The output is the final Telegram message (asterisks stripped, spans bolded).
+The output is the final Telegram message (asterisks stripped, spans bolded). If
+the command **exits nonzero**, a `**` marker is unmatched, empty, or spans a line
+break — fix the markers and rerun; never send output with literal `**` in it.
 No `<b>` or `#` — they show up literally. If python is unavailable, hand-convert
 with the fallback map in `references/formatting.md`.
 

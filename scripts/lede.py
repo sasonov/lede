@@ -12,15 +12,18 @@ NEVER as an inline argument, so untrusted text containing shell metacharacters
 
 `bold` transpiles spans wrapped in **double asterisks** (same as Discord bold) to
 Unicode sans-serif bold and removes the asterisks — author the whole Telegram
-message with **markers**, then run it once. With no `**` it bolds the entire
-input (single term). Only A-Z a-z 0-9 convert; emoji, punctuation, URLs pass
-through. `count` prints "<platform>: <n>/<limit> OK|OVER" and exits 1 when OVER.
+message with **markers**, then run it once. Each span must be non-empty, on a
+single line, and balanced; any malformed or leftover `**` marker makes `bold`
+exit nonzero so the error can't ship silently. Text with no `**` passes through
+unchanged. Only A-Z a-z 0-9 convert; emoji, punctuation, URLs pass through.
+`count` prints "<platform>: <n>/<limit> OK|OVER" and exits 1 when OVER.
 """
 import re
 import sys
 
 LIMITS = {"discord": 2000, "telegram": 4096}
-_SPAN = re.compile(r"\*\*(.+?)\*\*", re.DOTALL)
+# span content: non-empty, no '*' inside, no newline (spans don't cross lines).
+_SPAN = re.compile(r"\*\*([^*\n]+?)\*\*")
 
 
 def bold(s):
@@ -39,8 +42,16 @@ def bold(s):
 
 
 def apply_bold(s):
-    # **marked** spans -> bold (markers stripped); no markers -> bold whole string.
-    return _SPAN.sub(lambda m: bold(m.group(1)), s) if "**" in s else bold(s)
+    """Transpile **marked** spans to Unicode bold and strip the markers.
+    Raises ValueError if any `**` survives — i.e. a marker was unmatched, empty,
+    or tried to span a newline. Text with no markers returns unchanged."""
+    result = _SPAN.sub(lambda m: bold(m.group(1)), s)
+    if "**" in result:
+        raise ValueError(
+            "malformed bold marker(s) — each **span** must be non-empty, "
+            "balanced, and on one line"
+        )
+    return result
 
 
 def length(platform, s):
@@ -68,8 +79,15 @@ def _selftest():
     assert all(ord(bold(chr(o))) - 0x1D5EE == o - 0x61 for o in range(0x61, 0x7B))
     assert all(ord(bold(chr(o))) - 0x1D7EC == o - 0x30 for o in range(0x30, 0x3A))
     assert bold(" .:/!?-") == " .:/!?-"                     # non-alnum untouched
-    assert apply_bold("a **b** c") == "a " + bold("b") + " c"   # markers transpiled
-    assert apply_bold("plain") == bold("plain")                 # no markers -> whole
+    assert apply_bold("a **b** c") == "a " + bold("b") + " c"   # span transpiled
+    assert apply_bold("**a**\n**b**") == bold("a") + "\n" + bold("b")  # per-line spans
+    assert apply_bold("no bold here") == "no bold here"     # no markers -> unchanged
+    for bad in ("**unmatched", "a ****b", "**crosses\nlines**", "**a** stray **"):
+        try:
+            apply_bold(bad)
+            raise AssertionError(f"malformed marker not rejected: {bad!r}")
+        except ValueError:
+            pass
     assert length("discord", "abc") == 3
     assert length("telegram", bold("ab")) == 4             # bold letters are 2 units
     print("ok")
@@ -77,11 +95,16 @@ def _selftest():
 
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")   # astral glyphs need UTF-8 (Windows)
+    sys.stderr.reconfigure(encoding="utf-8")   # error text may contain non-ASCII too
     a = sys.argv[1:]
     if a[:1] == ["--selftest"]:
         _selftest()
     elif a[:1] == ["bold"]:
-        sys.stdout.write(apply_bold(_resolve(a[1:])))
+        try:
+            sys.stdout.write(apply_bold(_resolve(a[1:])))
+        except ValueError as e:
+            sys.stderr.write(f"bold: {e}\n")
+            sys.exit(1)
     elif a[:1] == ["count"] and len(a) >= 2 and a[1] in LIMITS:
         n = length(a[1], _resolve(a[2:]))
         ok = n <= LIMITS[a[1]]
