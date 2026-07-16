@@ -21,9 +21,10 @@ No tables, no inline markdown images. **Char limit 2000.**
 
 ## Telegram (Unicode — for a user send)
 
-- **Bold** headers / labels / key terms with the converter:
-  `python lede.py bold "text"` → 𝘁𝗲𝘅𝘁. Only A–Z / a–z / 0–9 convert; emoji,
-  punctuation, and URLs pass through untouched.
+- **Bold** headers / labels / key terms: mark them `**like this**`, write the
+  message to a temp file, and transpile with
+  `python scripts/lede.py bold --file <file>` → 𝘁𝗲𝘅𝘁 (markers stripped). Only
+  A–Z / a–z / 0–9 convert; emoji, punctuation, and URLs pass through untouched.
 - `•` bullets. **Bare URLs** (Telegram auto-links them). One leading emoji per
   header.
 - No `**`, `<b>`, or `#` — they render as literal characters.

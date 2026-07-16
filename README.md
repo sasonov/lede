@@ -4,8 +4,10 @@ Turn raw notes and news into an editorial, emoji-accented message formatted for
 **Discord** and **Telegram** — ready to copy-paste and send yourself as a user
 (no bot, no API). Prose is linted against AI-slop with [vale](https://vale.sh).
 
-It's a [Claude Code](https://claude.com/claude-code) **skill**: install it, then
-ask Claude to turn a pile of notes into two send-ready channel posts.
+It's an agent **skill** in the standard `SKILL.md` format, so it runs in
+[Claude Code](https://claude.com/claude-code), [Hermes](https://github.com/NousResearch/hermes-agent),
+or any harness that loads skills: install it, then ask the agent to turn a pile
+of notes into two send-ready channel posts.
 
 ## What it produces
 
@@ -25,9 +27,9 @@ You copy each block and send it into the channel yourself.
 
 | Need | Why | Required? |
 |------|-----|-----------|
-| **Claude Code** | it's a Claude Code skill | yes |
+| **An agent that loads `SKILL.md` skills** | Claude Code, Hermes, etc. | yes |
 | **git** | to clone / update the skill | yes (install only) |
-| **Python 3.7+** | `lede.py` — Telegram bold glyphs + message length checks | recommended |
+| **Python 3.7+** | `scripts/lede.py` — Telegram bold glyphs + message length checks | recommended |
 | **vale** | the AI-slop lint gate | recommended |
 
 The skill still runs with neither Python nor vale — it degrades to a manual bold
@@ -35,22 +37,38 @@ map and a heuristic self-check. Install both for the full experience.
 
 ## Install
 
-Clone straight into your Claude Code skills folder:
+### Claude Code
 
-**macOS / Linux**
+Clone straight into your skills folder, then start a new session:
+
 ```bash
+# macOS / Linux
 git clone https://github.com/sasonov/lede.git ~/.claude/skills/lede
 ```
-
-**Windows (PowerShell)**
 ```powershell
+# Windows (PowerShell)
 git clone https://github.com/sasonov/lede.git "$env:USERPROFILE\.claude\skills\lede"
 ```
 
-Start a new Claude Code session so it discovers the skill. Update later with:
+Update later: `git -C ~/.claude/skills/lede pull`
+
+### Hermes
+
+Skills live under `~/.hermes/skills/<category>/<name>/`. Clone into the
+`communication` category (matches the skill's own `metadata.hermes.category`):
+
 ```bash
-git -C ~/.claude/skills/lede pull
+git clone https://github.com/sasonov/lede.git ~/.hermes/skills/communication/lede
 ```
+
+Or use the CLI, which resolves GitHub skill repos and runs a safety scan:
+
+```bash
+hermes skills install sasonov/lede --category communication
+```
+
+Then `hermes skills list` should show `lede`. Update later with `git pull` in
+that folder.
 
 ### Install the dependencies
 
@@ -68,7 +86,8 @@ Most systems already have it.
 ## Verify
 
 ```bash
-python ~/.claude/skills/lede/lede.py --selftest   # prints: ok
+# adjust the path to wherever you installed the skill
+python ~/.claude/skills/lede/scripts/lede.py --selftest   # prints: ok
 vale --version
 ```
 
@@ -123,27 +142,32 @@ Docs: https://example.com/v2
 2. **Lint** the master with vale against AI-slop wordlists (banned tells, hedges,
    "not just X but Y"); revise once, then report residuals. Quotes and proper
    nouns are never edited to satisfy the linter.
-3. **Project** into Discord markdown and Telegram Unicode (`lede.py bold`).
-4. **Length-gate** each message with `lede.py count` (Discord 2000 code points /
-   Telegram 4096 UTF-16 units); split into numbered parts if over.
+3. **Project** into Discord markdown and Telegram Unicode (`scripts/lede.py bold`).
+4. **Length-gate** each message with `scripts/lede.py count` (Discord 2000 code
+   points / Telegram 4096 UTF-16 units); split into numbered parts if over.
 
-## The `lede.py` helper
+Message text is always passed to the helper via `--file` (or stdin), never as a
+shell argument — so pasted content with `$(...)`, backticks, or `|` can't be
+executed by the shell.
+
+## The `scripts/lede.py` helper
 
 ```bash
-python lede.py bold "August 1"          # -> 𝗔𝘂𝗴𝘂𝘀𝘁 𝟭
-python lede.py count discord  "<msg>"   # code-point length,  limit 2000
-python lede.py count telegram "<msg>"   # UTF-16 code units,  limit 4096  (exit 1 if OVER)
-python lede.py --selftest               # -> ok
+# author the Telegram message with **double-asterisk** bold spans, then:
+python scripts/lede.py bold  --file telegram.txt        # -> Unicode bold, markers stripped
+python scripts/lede.py count discord  --file discord.txt   # code points, limit 2000
+python scripts/lede.py count telegram --file telegram.txt  # UTF-16 units, limit 4096 (exit 1 if OVER)
+python scripts/lede.py --selftest                       # -> ok
 ```
 
 ## Files
 
 ```
-SKILL.md                 the instructions Claude follows
-reference/formatting.md  Discord markdown + Telegram Unicode map
-lede.py                  bold converter + per-platform length checker
-.vale.ini                vale config (local styles, no `vale sync`)
-styles/Editorial/*.yml   Slop / Hedging / NotJust wordlists
+SKILL.md                  the instructions the agent follows
+references/formatting.md  Discord markdown + Telegram Unicode map
+scripts/lede.py           bold converter + per-platform length checker
+.vale.ini                 vale config (local styles, no `vale sync`)
+styles/Editorial/*.yml    Slop / Hedging / NotJust wordlists
 ```
 
 ## Note on Telegram Unicode

@@ -1,6 +1,15 @@
 ---
 name: lede
 description: Turn raw notes, news, or bullet dumps into an editorial, emoji-accented message formatted for BOTH Discord and Telegram, ready to copy-paste and send AS A USER (no bot). Use when the user wants to broadcast, announce, post an update, or "make this look good for Discord/Telegram". Lints the prose against AI-slop with vale.
+version: 1.0.0
+author: sasonov
+license: MIT
+platforms: [linux, macos, windows]
+metadata:
+  hermes:
+    tags: [Discord, Telegram, editorial, broadcast, announcement, formatting, emoji, vale, writing, news, copywriting]
+    category: communication
+    requires_toolsets: [terminal]
 ---
 
 # Lede
@@ -13,6 +22,19 @@ must render on a plain copy-paste-and-send:
 - **Discord** renders markdown when a user pastes and sends → output markdown.
 - **Telegram** does NOT parse markdown/HTML on a user paste → formatting must be
   **Unicode characters** + emoji (baked into the glyph, survives any paste).
+
+## Runtime (any harness)
+
+This skill is harness-agnostic — it works in Claude Code, Hermes, or any agent
+with a terminal + file-writing tool. Two conventions:
+
+- **`<skill-dir>`** below means the folder this `SKILL.md` lives in. Claude Code:
+  `~/.claude/skills/lede`. Hermes: `~/.hermes/skills/<category>/lede`. Substitute
+  the real path.
+- **Never put message text inside a shell command.** Raw notes and drafts can
+  contain `$(...)`, backticks, or `|` that the shell would execute. Always write
+  the text to a temp file with your file tool, then pass `--file <path>` to
+  `lede.py` (or pipe via stdin). The commands below only ever carry a filename.
 
 ## Inputs
 
@@ -57,10 +79,8 @@ inside quotation marks or on a proper noun** — never edit a quote or a name to
 satisfy the linter (a news tool must not misquote its source).
 
 ```bash
-# <skill-dir> = the folder this SKILL.md lives in. Resolve it at invocation:
-# in Claude Code it's the skill's path; in another harness it's wherever you
-# copied dispatch/ to. --config is REQUIRED (vale searches upward from the
-# target file, and the draft lives outside this folder).
+# Write the draft to a temp file first, then lint it. --config is REQUIRED
+# (vale searches upward from the target file, and the draft lives elsewhere).
 vale --config="<skill-dir>/.vale.ini" /path/to/draft.md
 ```
 
@@ -74,30 +94,34 @@ vale --config="<skill-dir>/.vale.ini" /path/to/draft.md
 
 ### 3. Project into the two send-ready messages
 
-Prose is clean; only formatting changes. See `reference/formatting.md`.
+Prose is clean; only formatting changes. See `references/formatting.md`.
 
 **Discord** (renders on user paste-and-send): `##` / `###` headers, `-` bullets,
 `**bold**`, `*italic*`, `[label](url)`, ```` ```lang … ``` ```` code.
 
-**Telegram** (must survive a manual paste → Unicode): bold each header, label,
-and key term with the converter, then splice it in:
+**Telegram** (must survive a manual paste → Unicode): author the message with
+`**double-asterisk**` marking each span you want bold (headers, key terms), use
+`•` bullets, one leading emoji per header, and **bare URLs** (Telegram
+auto-links — never `[]()`). Then write it to a temp file and transpile the
+markers to Unicode bold in one pass:
 
 ```bash
-python "<skill-dir>/lede.py" bold "August 1"     # -> 𝗔𝘂𝗴𝘂𝘀𝘁 𝟭
+python "<skill-dir>/scripts/lede.py" bold --file telegram-draft.txt
 ```
 
-`•` bullets, one leading emoji per header, **bare URLs** (Telegram auto-links —
-never `[]()`). No `**`, `<b>`, or `#` — they show up literally. If python is
-unavailable, use the fallback map in `reference/formatting.md`.
+The output is the final Telegram message (asterisks stripped, spans bolded).
+No `<b>` or `#` — they show up literally. If python is unavailable, hand-convert
+with the fallback map in `references/formatting.md`.
 
 ### 4. Validate length, then emit
 
 **Count each projected message with the script — don't eyeball it** (Telegram's
-surrogate-pair glyphs make ordinary character counts wrong):
+surrogate-pair glyphs make ordinary character counts wrong). Write each message
+to a temp file, then:
 
 ```bash
-python "<skill-dir>/lede.py" count discord  "<discord message>"   # limit 2000
-python "<skill-dir>/lede.py" count telegram "<telegram message>"  # limit 4096
+python "<skill-dir>/scripts/lede.py" count discord  --file discord-msg.txt   # limit 2000
+python "<skill-dir>/scripts/lede.py" count telegram --file telegram-msg.txt  # limit 4096
 ```
 
 If either prints `OVER` (nonzero exit), split into numbered parts (`(1/2)`) and
