@@ -142,15 +142,17 @@ Emit two clearly labeled sections in this exact order:
 
 1. Write `**Discord**` as a title on its own line **outside and above** the fenced
    block, then put only the copyable Discord message inside the fence.
-2. Write `**Telegram**` as a title on its own line **outside and above** the fenced
-   block, then put only the copyable Telegram message inside the fence.
+2. Write `**Telegram**` as a title on its own line, add one blank line, then emit
+   the copyable Telegram message as **ordinary Unicode text with no fence**.
 
-The platform title must never appear inside the fenced message because the user
-copies the block contents directly. Use `~~~` if the message itself contains
-```` ``` ````. The platform titles are mandatory—never rely on block order to
-identify the outputs. Apart from these titles, include no counts or commentary.
-Add an extra line only when something needs action: an over-limit split or
-unresolved Vale alerts.
+The platform title must never appear inside either copyable message. Discord's
+message stays fenced so its markdown source remains literal; use `~~~` if the
+message itself contains ```` ``` ````. **Never fence, quote, indent, or wrap the
+Telegram message in inline code.** Telegram preserves a copied fenced block as
+preformatted/code text, which breaks the intended paste-and-send result. The
+platform titles are mandatory—never rely on output order to identify them.
+Apart from these titles, include no counts or commentary. Add an extra line only
+when something needs action: an over-limit split or unresolved Vale alerts.
 
 ### Links, images, code in the source
 - **URLs** → Discord `[label](url)`; Telegram bare URL.

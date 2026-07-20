@@ -28,6 +28,9 @@ No tables, no inline markdown images. **Char limit 2000.**
 - `•` bullets. **Bare URLs** (Telegram auto-links them). One leading emoji per
   header.
 - No `**`, `<b>`, or `#` — they render as literal characters.
+- Emit the final message as ordinary Unicode text. **Never place it in a fenced
+  code block, blockquote, indented block, or inline-code wrapper:** Telegram can
+  preserve that wrapper as preformatted/code styling when the user copies it.
 - **Char limit 4096.** Bold letters are surrogate pairs (2 UTF-16 units each), so
   keep bold to headers + key terms, not whole paragraphs.
 

@@ -21,7 +21,10 @@ you two messages:
   markdown on a user paste, so the formatting is baked into the characters and
   survives the paste.
 
-You copy each block and send it into the channel yourself.
+You copy each message and send it into the channel yourself. Discord is shown in
+a fenced block so its markdown stays literal. Telegram is shown as ordinary
+Unicode text, never as a code block, so copying it does not preserve unwanted
+preformatted styling.
 
 ## Requirements
 
@@ -125,7 +128,7 @@ Docs: [example.com/v2](https://example.com/v2)
 ```
 
 **Telegram**
-```
+
 🚀 𝘃𝟮.𝟯 𝗶𝘀 𝗹𝗶𝘃𝗲
 
 𝗗𝗮𝗿𝗸 𝗺𝗼𝗱𝗲 landed, and cold starts are 𝟰𝟬% 𝗳𝗮𝘀𝘁𝗲𝗿.
@@ -133,7 +136,6 @@ Docs: [example.com/v2](https://example.com/v2)
 𝗛𝗲𝗮𝗱𝘀 𝘂𝗽 — 𝗯𝗿𝗲𝗮𝗸𝗶𝗻𝗴 𝗰𝗵𝗮𝗻𝗴𝗲: old API keys stop working 𝗔𝘂𝗴𝘂𝘀𝘁 𝟭. Rotate yours before then.
 
 Docs: https://example.com/v2
-```
 
 ## How it works
 
