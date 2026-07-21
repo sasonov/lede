@@ -1,7 +1,7 @@
 ---
 name: lede
 description: Turn raw notes, news, or bullet dumps into an editorial, emoji-accented message formatted for BOTH Discord and Telegram, ready to copy-paste and send AS A USER (no bot). Use when the user wants to broadcast, announce, post an update, or "make this look good for Discord/Telegram". Lints the prose against AI-slop with vale.
-version: 1.0.0
+version: 1.2.0
 author: sasonov
 license: MIT
 platforms: [linux, macos, windows]
@@ -14,14 +14,14 @@ metadata:
 
 # Lede
 
-Turn raw input (notes, news, links, bullets) into a polished editorial message.
-The user **copies each finished message and sends it themselves** into a Discord
-channel and a Telegram channel — as a normal user, no bot, no API. Everything
-must render on a plain copy-paste-and-send:
+Turn raw input (notes, news, links, bullets) into **two separately authored
+messages**: one for Discord and one for Telegram. The user copies and sends each
+finished message themselves. Preserve native formatting on both platforms:
 
-- **Discord** renders markdown when a user pastes and sends → output markdown.
-- **Telegram** does NOT parse markdown/HTML on a user paste → formatting must be
-  **Unicode characters** + emoji (baked into the glyph, survives any paste).
+- **Discord** → output standard Discord markdown.
+- **Telegram** → output normal bold entities/markdown on a rendering surface such
+  as Hermes Telegram. Native Telegram formatting survives copy-paste in this
+  workflow. Never replace letters with Unicode mathematical-bold characters.
 
 ## Runtime (any harness)
 
@@ -43,10 +43,14 @@ with a terminal + file-writing tool. Two conventions:
 
 ## Process
 
-### 1. Draft the master (platform-neutral)
+### 1. Build the fact brief
 
-Write ONE editorial body in plain markdown. **Default shape — follow it when the
-content fits, break it when it doesn't:**
+Extract a short platform-neutral checklist of required facts, names, dates,
+links, warnings, and calls to action. This is a factual source sheet—not reusable
+finished prose. Both platform drafts must preserve every required fact.
+
+Use this default editorial shape when it fits, but draft it independently for
+each platform in step 2:
 
 - **Hook** — one sharp line, the single most important thing. No preamble.
 - **A few tight sections** — a short bold label + 1–3 sentences each. Lead with
@@ -55,28 +59,47 @@ content fits, break it when it doesn't:**
   manufacture a takeaway; a hollow closer that restates the intro is itself
   AI-slop. If the content has no close, end on the last real point.
 
-**Length: aim ≤ ~1900 characters.** This is a drafting guide, not the check —
-formatting adds characters. The real validation is on the projected output (4).
+**Length:** aim for ≤ ~1900 characters per platform draft. This is a drafting
+guide, not the check. The real validation is in step 4.
 
-**Emoji discipline** (load-bearing — emoji spam is itself AI-slop):
-at most ONE meaningful emoji as a section-header accent. NO emoji bullet on every
-line, NO 🚀🔥✅ clusters, NO mid-sentence emoji.
+**Emoji density:** use roughly one-third more emoji than a minimalist corporate
+post. A standard 3–5-section announcement should normally contain **2–4 meaningful
+emoji accents** across the title and key section headers. Discord and Telegram may
+use the same emoji plan. Do not put emoji on every bullet, stack decorative
+clusters (`🚀🔥✅`), or interrupt sentences with them.
 
 **Voice** — say it once, plainly. Active voice, concrete nouns, no hedging, no
-build-up. `punchy` = shorter sentences, stronger verbs, a bolder hook — never
-more emoji. Avoid these AI-slop tells (vale catches the lexical ones; the
-structural ones are on you):
+build-up. `punchy` = shorter sentences, stronger verbs, and a bolder hook; emoji
+density still follows the 2–4 accent range. Avoid these AI-slop tells (Vale catches
+the lexical ones; the structural ones are on you):
 - **"not just X, but Y"** and "it's not about… it's about…" — say the one true thing.
 - **Uniform sentence rhythm** — vary length or it reads like a bot.
 - **Hollow openers** ("In today's world…", "As we all know…") — open on the point.
 - No vague filler, no jargon without a plain-language anchor, no humor near bad
   news, don't lecture the reader (from impeccable's ux-writing).
 
-### 2. Vale gate (lint the MASTER prose only)
+### 2. Write two separate send-ready messages
 
-Lint the neutral master, before formatting. **First, waive any alert on text
-inside quotation marks or on a proper noun** — never edit a quote or a name to
-satisfy the linter (a news tool must not misquote its source).
+Use the same fact brief, but **author Discord and Telegram independently**. They
+must be separate messages, not one body with formatting swapped. The hook,
+section order, sentence length, transitions, CTA, and line breaks may differ to
+fit each platform. Do not copy the complete prose from one draft into the other.
+Short fixed facts may match verbatim. See `references/formatting.md`.
+
+**Discord** (renders on user paste-and-send): `##` / `###` headers, `-` bullets,
+`**bold**`, `*italic*`, `[label](url)`, ```` ```lang … ``` ```` code.
+
+**Telegram:** use `**normal bold**` for the title, headers, and key terms; use
+literal `-` list markers; use 2–4 meaningful emoji accents for a normal post; and
+use **bare URLs**. Do not use `##` headings, `•` list markers, HTML tags, or Unicode
+mathematical-bold glyphs. Emit Telegram as ordinary rendered text, not a code
+block, so the user copies native formatting rather than raw markup.
+
+### 3. Vale gate both drafts
+
+Lint **both platform drafts separately**. First waive any alert on text inside
+quotation marks or on a proper noun—never edit a quote or a name to satisfy the
+linter.
 
 ```bash
 # Write the draft to a temp file first, then lint it. --config is REQUIRED
@@ -84,7 +107,7 @@ satisfy the linter (a news tool must not misquote its source).
 # Hermes Docker installs may keep user binaries outside PATH.
 VALE_BIN="$(command -v vale 2>/dev/null || true)"
 [ -n "$VALE_BIN" ] || VALE_BIN="$HOME/.local/bin/vale"
-"$VALE_BIN" --config="<skill-dir>/.vale.ini" /path/to/draft.md
+"$VALE_BIN" --config="<skill-dir>/.vale.ini" /path/to/discord-draft.md /path/to/telegram-draft.md
 ```
 
 For this Hermes profile, the verified skill directory is
@@ -100,42 +123,25 @@ possible so the skill remains portable.
   self-check the draft against them, and note "vale unavailable — reduced check."
   (This skill is **portable and vale-optional**, not self-contained.)
 
-### 3. Project into the two send-ready messages
-
-Prose is clean; only formatting changes. See `references/formatting.md`.
-
-**Discord** (renders on user paste-and-send): `##` / `###` headers, `-` bullets,
-`**bold**`, `*italic*`, `[label](url)`, ```` ```lang … ``` ```` code.
-
-**Telegram** (must survive a manual paste → Unicode): author the message with
-`**double-asterisk**` marking each span you want bold (headers, key terms), use
-`•` bullets, one leading emoji per header, and **bare URLs** (Telegram
-auto-links — never `[]()`). Then write it to a temp file and transpile the
-markers to Unicode bold in one pass:
-
-```bash
-python "<skill-dir>/scripts/lede.py" bold --file telegram-draft.txt
-```
-
-The output is the final Telegram message (asterisks stripped, spans bolded). If
-the command **exits nonzero**, a `**` marker is unmatched, empty, or spans a line
-break — fix the markers and rerun; never send output with literal `**` in it.
-No `<b>` or `#` — they show up literally. If python is unavailable, hand-convert
-with the fallback map in `references/formatting.md`.
-
 ### 4. Validate length, then emit
 
-**Count each projected message with the script — don't eyeball it** (Telegram's
-surrogate-pair glyphs make ordinary character counts wrong). Write each message
-to a temp file, then:
+**Validate and count each projected message with the script — don't eyeball it.**
+The checker rejects malformed bold markers, Unicode mathematical-bold glyphs,
+and `•` list markers. Telegram count strips supported formatting markers first,
+then counts UTF-16 units in the rendered text. Write each message to a temp file:
 
 ```bash
-python "<skill-dir>/scripts/lede.py" count discord  --file discord-msg.txt   # limit 2000
-python "<skill-dir>/scripts/lede.py" count telegram --file telegram-msg.txt  # limit 4096
+python "<skill-dir>/scripts/lede.py" check discord  --file discord-msg.txt
+python "<skill-dir>/scripts/lede.py" check telegram --file telegram-msg.txt
+python "<skill-dir>/scripts/lede.py" compare --discord-file discord-msg.txt --telegram-file telegram-msg.txt
 ```
 
+`compare` rejects substantial drafts that are near-identical after formatting is
+removed. If it fails, rewrite one platform version; cosmetic marker changes do
+not count as separate authorship.
+
 If either prints `OVER` (nonzero exit), split into numbered parts (`(1/2)`) and
-run `count` on **each part** until all pass; when the two channels split
+run `check` on **each part** until all pass; when the two channels split
 differently, label each block by platform + part.
 
 Emit two clearly labeled sections in this exact order:
@@ -143,7 +149,7 @@ Emit two clearly labeled sections in this exact order:
 1. Write `**Discord**` as a title on its own line **outside and above** the fenced
    block, then put only the copyable Discord message inside the fence.
 2. Write `**Telegram**` as a title on its own line, add one blank line, then emit
-   the copyable Telegram message as **ordinary Unicode text with no fence**.
+   the copyable Telegram message as **ordinary rendered text with no fence**.
 
 The platform title must never appear inside either copyable message. Discord's
 message stays fenced so its markdown source remains literal; use `~~~` if the
@@ -157,4 +163,4 @@ when something needs action: an over-limit split or unresolved Vale alerts.
 ### Links, images, code in the source
 - **URLs** → Discord `[label](url)`; Telegram bare URL.
 - **Images** → neither renders inline markdown images; list them as URLs.
-- **Code** → Discord fenced block; Telegram indent or `•`-prefix, keep it short.
+- **Code** → Discord fenced block; Telegram inline code or a short fenced block.

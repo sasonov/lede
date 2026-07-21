@@ -12,19 +12,17 @@ of notes into two send-ready channel posts.
 ## What it produces
 
 Feed it raw input (notes, bullets, links, news). It writes one clean editorial
-master — a hook, a few tight sections, an optional close — lints it, then hands
-you two messages:
+fact brief, then independently writes and lints two platform-specific messages:
 
 - **Discord** — native markdown (`##` headers, `-` bullets, `[masked](links)`).
   Renders when you paste and send.
-- **Telegram** — Unicode 𝗯𝗼𝗹𝗱 + emoji + `•` + bare URLs. Telegram doesn't parse
-  markdown on a user paste, so the formatting is baked into the characters and
-  survives the paste.
+- **Telegram** — native bold + emoji + `-` bullets + bare URLs. The Telegram
+  rendering surface creates normal formatting entities that survive this
+  workflow's copy-paste. Unicode mathematical bold is forbidden.
 
 You copy each message and send it into the channel yourself. Discord is shown in
 a fenced block so its markdown stays literal. Telegram is shown as ordinary
-Unicode text, never as a code block, so copying it does not preserve unwanted
-preformatted styling.
+rendered text, never as a code block, so native formatting is preserved.
 
 ## Requirements
 
@@ -32,11 +30,11 @@ preformatted styling.
 |------|-----|-----------|
 | **An agent that loads `SKILL.md` skills** | Claude Code, Hermes, etc. | yes |
 | **git** | to clone / update the skill | yes (install only) |
-| **Python 3.7+** | `scripts/lede.py` — Telegram bold glyphs + message length checks | recommended |
+| **Python 3.7+** | `scripts/lede.py` — formatting validation + message length checks | recommended |
 | **vale** | the AI-slop lint gate | recommended |
 
-The skill still runs with neither Python nor vale — it degrades to a manual bold
-map and a heuristic self-check. Install both for the full experience.
+The skill still runs with neither Python nor vale, but loses automated formatting,
+length, and prose checks. Install both for the full experience.
 
 ## Install
 
@@ -129,24 +127,22 @@ Docs: [example.com/v2](https://example.com/v2)
 
 **Telegram**
 
-🚀 𝘃𝟮.𝟯 𝗶𝘀 𝗹𝗶𝘃𝗲
+**🚀 v2.3 is live**
 
-𝗗𝗮𝗿𝗸 𝗺𝗼𝗱𝗲 landed, and cold starts are 𝟰𝟬% 𝗳𝗮𝘀𝘁𝗲𝗿.
+**🌙 Dark mode** landed, and cold starts are **40% faster**.
 
-𝗛𝗲𝗮𝗱𝘀 𝘂𝗽 — 𝗯𝗿𝗲𝗮𝗸𝗶𝗻𝗴 𝗰𝗵𝗮𝗻𝗴𝗲: old API keys stop working 𝗔𝘂𝗴𝘂𝘀𝘁 𝟭. Rotate yours before then.
+⚠️ **Heads up — breaking change:** old API keys stop working **August 1**. Rotate yours before then.
 
-Docs: https://example.com/v2
+📚 Docs: https://example.com/v2
 
 ## How it works
 
-1. **Draft** one platform-neutral editorial master (hook → tight sections →
-   optional close); emoji only as section accents, never per-line spam.
-2. **Lint** the master with vale against AI-slop wordlists (banned tells, hedges,
-   "not just X but Y"); revise once, then report residuals. Quotes and proper
-   nouns are never edited to satisfy the linter.
-3. **Project** into Discord markdown and Telegram Unicode (`scripts/lede.py bold`).
-4. **Length-gate** each message with `scripts/lede.py count` (Discord 2000 code
-   points / Telegram 4096 UTF-16 units); split into numbered parts if over.
+1. **Extract** one platform-neutral fact brief—facts only, not reusable prose.
+2. **Author** Discord and Telegram independently. Hooks, ordering, transitions,
+   CTAs, and line breaks can differ; formatting-only clones are rejected.
+3. **Lint** both drafts separately with Vale against AI-slop wordlists.
+4. **Validate** formatting and length with `scripts/lede.py check`, then enforce
+   separate authorship with `scripts/lede.py compare`.
 
 Message text is always passed to the helper via `--file` (or stdin), never as a
 shell argument — so pasted content with `$(...)`, backticks, or `|` can't be
@@ -155,10 +151,11 @@ executed by the shell.
 ## The `scripts/lede.py` helper
 
 ```bash
-# author the Telegram message with **double-asterisk** bold spans, then:
-python scripts/lede.py bold  --file telegram.txt        # -> Unicode bold, markers stripped
-python scripts/lede.py count discord  --file discord.txt   # code points, limit 2000
-python scripts/lede.py count telegram --file telegram.txt  # UTF-16 units, limit 4096 (exit 1 if OVER)
+python scripts/lede.py check discord  --file discord.txt
+python scripts/lede.py check telegram --file telegram.txt
+python scripts/lede.py compare --discord-file discord.txt --telegram-file telegram.txt
+python scripts/lede.py count discord  --file discord.txt
+python scripts/lede.py count telegram --file telegram.txt
 python scripts/lede.py --selftest                       # -> ok
 ```
 
@@ -166,16 +163,14 @@ python scripts/lede.py --selftest                       # -> ok
 
 ```
 SKILL.md                  the instructions the agent follows
-references/formatting.md  Discord markdown + Telegram Unicode map
-scripts/lede.py           bold converter + per-platform length checker
+references/formatting.md  native Discord + Telegram formatting rules
+scripts/lede.py           formatting validator + per-platform length checker
 .vale.ini                 vale config (local styles, no `vale sync`)
 styles/Editorial/*.yml    Slop / Hedging / NotJust wordlists
 ```
 
-## Note on Telegram Unicode
+## Telegram accessibility
 
-The Telegram output uses Unicode math-bold characters. They render visually
-everywhere, but they aren't real markup: screen readers announce them as
-"mathematical bold," and Ctrl-F for `August` won't match `𝗔𝘂𝗴𝘂𝘀𝘁`. It's the
-only formatting that survives a manual copy-paste into Telegram as a user — an
-accepted trade-off for this workflow.
+Use native Telegram bold only. Unicode mathematical alphanumeric characters are
+not real formatting, harm search and screen-reader output, and are rejected by
+the validator.

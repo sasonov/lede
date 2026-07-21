@@ -1,50 +1,50 @@
 # Discord vs Telegram formatting
 
-Both messages are **copied and sent by a human user** — no bot, no API. So:
-- **Discord** parses markdown on send → use markdown.
-- **Telegram** does NOT parse markdown/HTML on a user paste → formatting must be
-  **Unicode characters** (the bold look is baked into the glyph, so it survives
-  any paste and renders everywhere).
+Discord and Telegram receive separately authored messages based on the same fact brief. Do not reuse one finished body and swap formatting. Use native formatting on both platforms; never imitate bold with Unicode mathematical characters.
 
-## Discord (markdown source)
+## Discord
 
-| Feature      | Syntax                    |
-|--------------|---------------------------|
-| Header       | `## ` / `### `            |
-| Bold         | `**bold**`                |
-| Italic       | `*italic*`                |
-| Bullets      | `- item`                  |
-| Link         | `[label](url)` (auto-embeds) |
-| Code block   | ```` ```lang\n…\n``` ```` |
+| Feature | Syntax |
+|---|---|
+| Header | `## ` / `### ` |
+| Bold | `**bold**` |
+| Italic | `*italic*` |
+| Bullets | `- item` |
+| Link | `[label](url)` |
+| Code block | fenced code block |
 
-No tables, no inline markdown images. **Char limit 2000.**
+- Character limit: 2000 characters of message content.
+- Use 2–4 meaningful emoji accents in a typical 3–5-section announcement.
+- Keep emoji on the title and selected section headers, not every bullet.
 
-## Telegram (Unicode — for a user send)
+## Telegram
 
-- **Bold** headers / labels / key terms: mark them `**like this**`, write the
-  message to a temp file, and transpile with
-  `python scripts/lede.py bold --file <file>` → 𝘁𝗲𝘅𝘁 (markers stripped). Only
-  A–Z / a–z / 0–9 convert; emoji, punctuation, and URLs pass through untouched.
-- `•` bullets. **Bare URLs** (Telegram auto-links them). One leading emoji per
-  header.
-- No `**`, `<b>`, or `#` — they render as literal characters.
-- Emit the final message as ordinary Unicode text. **Never place it in a fenced
-  code block, blockquote, indented block, or inline-code wrapper:** Telegram can
-  preserve that wrapper as preformatted/code styling when the user copies it.
-- **Char limit 4096.** Bold letters are surrogate pairs (2 UTF-16 units each), so
-  keep bold to headers + key terms, not whole paragraphs.
+- Use normal native bold for titles, headers, and key terms. In agent source, mark it as `**bold**`; the Telegram rendering surface converts it to a bold entity.
+- Native formatting survives the copy-paste workflow. Do not convert letters to Unicode mathematical-bold glyphs.
+- Use literal `-` list markers, not `•`.
+- Use bare URLs so Telegram auto-links them.
+- Do not use Markdown headings (`##`) or HTML tags.
+- Emit the Telegram message as ordinary rendered text, never inside a code block, quote, or inline-code wrapper.
+- Character limit: 4096 UTF-16 code units after formatting entities are parsed.
+- Use 2–4 meaningful emoji accents in a typical 3–5-section announcement. A longer post may use one additional accent when it improves scanning.
 
-**Manual fallback** (only if python is unavailable) — sans-serif bold map:
+## Emoji standard
 
+The target is roughly 30–40% more visual guidance than the previous minimalist style:
+
+- Typical short announcement: 2–3 emoji.
+- Typical multi-section announcement: 3–4 emoji.
+- Good placements: title, launch/feature section, requirements or warning section, feedback/CTA.
+- Avoid emoji bullets on every line, decorative clusters, repeated emoji, and mid-sentence interruptions.
+
+## Validation
+
+Run the checker on each projected source file:
+
+```bash
+python scripts/lede.py check discord --file discord.txt
+python scripts/lede.py check telegram --file telegram.txt
+python scripts/lede.py compare --discord-file discord.txt --telegram-file telegram.txt
 ```
-A→𝗔 B→𝗕 C→𝗖 D→𝗗 E→𝗘 F→𝗙 G→𝗚 H→𝗛 I→𝗜 J→𝗝 K→𝗞 L→𝗟 M→𝗠 N→𝗡
-O→𝗢 P→𝗣 Q→𝗤 R→𝗥 S→𝗦 T→𝗧 U→𝗨 V→𝗩 W→𝗪 X→𝗫 Y→𝗬 Z→𝗭
-a→𝗮 b→𝗯 c→𝗰 d→𝗱 e→𝗲 f→𝗳 g→𝗴 h→𝗵 i→𝗶 j→𝗷 k→𝗸 l→𝗹 m→𝗺 n→𝗻
-o→𝗼 p→𝗽 q→𝗾 r→𝗿 s→𝘀 t→𝘁 u→𝘂 v→𝘃 w→𝘄 x→𝘅 y→𝘆 z→𝘇
-0→𝟬 1→𝟭 2→𝟮 3→𝟯 4→𝟰 5→𝟱 6→𝟲 7→𝟳 8→𝟴 9→𝟵
-```
 
-## Why not MarkdownV2 / HTML
-
-Those only render when a **bot** sends with `parse_mode`. A human paste shows the
-literal `*` / `<b>`, so Unicode is the correct choice for user-sent messages.
+The checker rejects malformed bold markers, Unicode mathematical alphanumeric glyphs, and `•` list markers. Telegram length is measured on rendered text after supported formatting markers are removed. The comparison gate rejects substantial drafts with normalized similarity of 0.900 or higher.
