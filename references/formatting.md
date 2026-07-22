@@ -47,4 +47,4 @@ python scripts/lede.py check telegram --file telegram.txt
 python scripts/lede.py compare --discord-file discord.txt --telegram-file telegram.txt
 ```
 
-The checker rejects malformed bold markers, Unicode mathematical alphanumeric glyphs, and `•` list markers. Telegram length is measured on rendered text after supported formatting markers are removed. The comparison gate rejects substantial drafts with normalized similarity of 0.900 or higher.
+The checker rejects malformed bold markers, Unicode mathematical alphanumeric glyphs, `•` list markers, and whole-message code/quote wrappers. Telegram length is measured on rendered text after supported formatting markers are removed. The comparison gate rejects substantial drafts with normalized similarity of 0.900 or higher.

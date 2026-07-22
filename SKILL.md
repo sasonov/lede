@@ -127,8 +127,9 @@ possible so the skill remains portable.
 
 **Validate and count each projected message with the script — don't eyeball it.**
 The checker rejects malformed bold markers, Unicode mathematical-bold glyphs,
-and `•` list markers. Telegram count strips supported formatting markers first,
-then counts UTF-16 units in the rendered text. Write each message to a temp file:
+`•` list markers, and whole-message code/quote wrappers. Telegram count strips
+supported formatting markers first, then counts UTF-16 units in the rendered
+text. Write each message to a temp file:
 
 ```bash
 python "<skill-dir>/scripts/lede.py" check discord  --file discord-msg.txt

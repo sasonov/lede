@@ -173,4 +173,5 @@ styles/Editorial/*.yml    Slop / Hedging / NotJust wordlists
 
 Use native Telegram bold only. Unicode mathematical alphanumeric characters are
 not real formatting, harm search and screen-reader output, and are rejected by
-the validator.
+the validator. The validator also rejects wrapping the entire Telegram message
+in a code block, blockquote, or indented code block.

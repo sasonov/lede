@@ -62,6 +62,26 @@ def emoji_count(s):
     return len(_EMOJI_RE.findall(s))
 
 
+def whole_message_wrapper(s):
+    """Detect wrappers that make the entire Telegram post copy as code/quote."""
+    lines = s.splitlines()
+    while lines and not lines[0].strip():
+        lines.pop(0)
+    while lines and not lines[-1].strip():
+        lines.pop()
+    nonblank = [line for line in lines if line.strip()]
+    if not nonblank:
+        return None
+    opening = re.match(r"^\s*(`{3,}|~{3,})[^\n]*$", nonblank[0])
+    if opening and re.match(rf"^\s*{re.escape(opening.group(1))}\s*$", nonblank[-1]):
+        return "code fence"
+    if all(re.match(r"^\s*>", line) for line in nonblank):
+        return "blockquote"
+    if all(line.startswith(("    ", "\t")) for line in nonblank):
+        return "indented code block"
+    return None
+
+
 def comparable_text(s):
     """Normalize platform markup so formatting-only clones compare as identical."""
     text = _MARKDOWN_LINK_RE.sub(r"\1", s)
@@ -86,7 +106,7 @@ def validate(platform, s):
         errors.append("list markers must be literal '- ', not '*' or '+'")
     if any(line.count("**") % 2 for line in s.splitlines()):
         errors.append("unbalanced or cross-line ** bold markers")
-    if re.search(r"\*\*\s*\*\*", s):
+    if re.search(r"\*\*[ \t]*\*\*", s):
         errors.append("empty ** bold span")
     if platform == "telegram" and _TELEGRAM_HEADING_RE.search(s):
         errors.append("Telegram headings must use normal bold, not #/## heading markers")
@@ -94,6 +114,8 @@ def validate(platform, s):
         errors.append("Telegram output must use native bold source, not HTML tags")
     if platform == "telegram" and _MARKDOWN_LINK_RE.search(s):
         errors.append("Telegram links must be bare URLs, not masked Markdown links")
+    if platform == "telegram" and (wrapper := whole_message_wrapper(s)):
+        errors.append(f"Telegram output must be ordinary rendered text, not a whole-message {wrapper}")
     return errors
 
 
@@ -136,6 +158,10 @@ def _selftest():
     assert validate("telegram", "* Item")
     assert validate("telegram", "<b>Title</b>")
     assert validate("telegram", "[Docs](https://example.com)")
+    assert validate("telegram", "```text\n**Title**\n\n- Item\n```")
+    assert validate("telegram", "> **Title**\n>\n> - Item")
+    assert validate("telegram", "    **Title**\n\n    - Item")
+    assert validate("telegram", "**Title**\n\n`short code`\n\n- Item") == []
     assert emoji_count("🚀 Text 🎯") == 2
     assert similarity("## **Same text**", "**Same text**") == 1.0
     assert similarity("Discord opens with the launch details.", "Telegram starts with a short user call to action.") < 0.7
