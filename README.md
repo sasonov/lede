@@ -1,7 +1,7 @@
 # lede
 
 Turn raw notes and news into an editorial, emoji-accented message formatted for
-**Discord** and **Telegram** — ready to copy-paste and send yourself as a user
+**Discord** and **Telegram**, ready to copy-paste and send yourself as a user
 (no bot, no API). Prose is linted against AI-slop with [vale](https://vale.sh).
 
 It's an agent **skill** in the standard `SKILL.md` format, so it runs in
@@ -14,9 +14,9 @@ of notes into two send-ready channel posts.
 Feed it raw input (notes, bullets, links, news). It writes one clean editorial
 fact brief, then independently writes and lints two platform-specific messages:
 
-- **Discord** — native markdown (`##` headers, `-` bullets, `[masked](links)`).
+- **Discord:** native markdown (`##` headers, `-` bullets, `[masked](links)`).
   Renders when you paste and send.
-- **Telegram** — native bold + emoji + `-` bullets + bare URLs. The Telegram
+- **Telegram:** native bold + emoji + `-` bullets + bare URLs. The Telegram
   rendering surface creates normal formatting entities that survive this
   workflow's copy-paste. Unicode mathematical bold is forbidden.
 
@@ -30,7 +30,7 @@ rendered text, never as a code block, so native formatting is preserved.
 |------|-----|-----------|
 | **An agent that loads `SKILL.md` skills** | Claude Code, Hermes, etc. | yes |
 | **git** | to clone / update the skill | yes (install only) |
-| **Python 3.7+** | `scripts/lede.py` — formatting validation + message length checks | recommended |
+| **Python 3.7+** | `scripts/lede.py`: formatting validation + message length checks | recommended |
 | **vale** | the AI-slop lint gate | recommended |
 
 The skill still runs with neither Python nor vale, but loses automated formatting,
@@ -73,7 +73,7 @@ that folder.
 
 ### Install the dependencies
 
-**vale** — the anti-slop gate (no `vale sync` needed; the styles ship in the repo):
+**vale**: the anti-slop gate (no `vale sync` needed; the styles ship in the repo):
 
 | OS | Command |
 |----|---------|
@@ -81,7 +81,7 @@ that folder.
 | Windows | `winget install errata-ai.Vale` or `scoop install vale` |
 | any | [download a release](https://github.com/errata-ai/vale/releases) |
 
-**Python 3.7+** — from your package manager or [python.org](https://www.python.org/downloads/).
+**Python 3.7+**: from your package manager or [python.org](https://www.python.org/downloads/).
 Most systems already have it.
 
 ## Verify
@@ -94,7 +94,7 @@ vale --version
 
 ## Use
 
-In Claude Code, just describe the task — the skill triggers on its own:
+In Claude Code, just describe the task: the skill triggers on its own:
 
 > Turn these release notes into a Discord and Telegram post:
 > *(paste your notes)*
@@ -119,7 +119,7 @@ send-ready blocks. Copy → paste → send.
 
 **Dark mode** landed, and cold starts are **40% faster**.
 
-**Heads up — breaking change:** old API keys stop working **August 1**. Rotate
+**Heads up, breaking change:** old API keys stop working **August 1**. Rotate
 yours before then.
 
 Docs: [example.com/v2](https://example.com/v2)
@@ -131,13 +131,13 @@ Docs: [example.com/v2](https://example.com/v2)
 
 **🌙 Dark mode** landed, and cold starts are **40% faster**.
 
-⚠️ **Heads up — breaking change:** old API keys stop working **August 1**. Rotate yours before then.
+⚠️ **Heads up, breaking change:** old API keys stop working **August 1**. Rotate yours before then.
 
 📚 Docs: https://example.com/v2
 
 ## How it works
 
-1. **Extract** one platform-neutral fact brief—facts only, not reusable prose.
+1. **Extract** one platform-neutral fact brief: facts only, not reusable prose.
 2. **Author** Discord and Telegram independently. Hooks, ordering, transitions,
    CTAs, and line breaks can differ; formatting-only clones are rejected.
 3. **Lint** both drafts separately with Vale against AI-slop wordlists.
@@ -145,7 +145,7 @@ Docs: [example.com/v2](https://example.com/v2)
    separate authorship with `scripts/lede.py compare`.
 
 Message text is always passed to the helper via `--file` (or stdin), never as a
-shell argument — so pasted content with `$(...)`, backticks, or `|` can't be
+shell argument: so pasted content with `$(...)`, backticks, or `|` can't be
 executed by the shell.
 
 ## The `scripts/lede.py` helper

@@ -1,5 +1,5 @@
 extends: existence
-message: "AI-slop tell: '%s' — cut it or say it plainly."
+message: "AI-slop tell: '%s'; cut it or say it plainly."
 level: error
 ignorecase: true
 tokens:

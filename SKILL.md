@@ -25,7 +25,7 @@ finished message themselves. Preserve native formatting on both platforms:
 
 ## Runtime (any harness)
 
-This skill is harness-agnostic — it works in Claude Code, Hermes, or any agent
+This skill is harness-agnostic: it works in Claude Code, Hermes, or any agent
 with a terminal + file-writing tool. Two conventions:
 
 - **`<skill-dir>`** below means the folder this `SKILL.md` lives in. Claude Code:
@@ -38,24 +38,24 @@ with a terminal + file-writing tool. Two conventions:
 
 ## Inputs
 
-- **Raw content** — the notes/news to shape. Required.
-- **Tone** — `calm` (default) or `punchy`. Optional.
+- **Raw content**: the notes/news to shape. Required.
+- **Tone**: `calm` (default) or `punchy`. Optional.
 
 ## Process
 
 ### 1. Build the fact brief
 
 Extract a short platform-neutral checklist of required facts, names, dates,
-links, warnings, and calls to action. This is a factual source sheet—not reusable
+links, warnings, and calls to action. This is a factual source sheet, not reusable
 finished prose. Both platform drafts must preserve every required fact.
 
 Use this default editorial shape when it fits, but draft it independently for
 each platform in step 2:
 
-- **Hook** — one sharp line, the single most important thing. No preamble.
-- **A few tight sections** — a short bold label + 1–3 sentences each. Lead with
+- **Hook**: one sharp line, the single most important thing. No preamble.
+- **A few tight sections**: a short bold label + 1–3 sentences each. Lead with
   what changed, not background. Group related facts.
-- **Close only when there's a real one** — a consequence or a next step. Do NOT
+- **Close only when there's a real one**: a consequence or a next step. Do NOT
   manufacture a takeaway; a hollow closer that restates the intro is itself
   AI-slop. If the content has no close, end on the last real point.
 
@@ -68,13 +68,15 @@ emoji accents** across the title and key section headers. Discord and Telegram m
 use the same emoji plan. Do not put emoji on every bullet, stack decorative
 clusters (`🚀🔥✅`), or interrupt sentences with them.
 
-**Voice** — say it once, plainly. Active voice, concrete nouns, no hedging, no
+**Voice**: say it once, plainly. Active voice, concrete nouns, no hedging, no
 build-up. `punchy` = shorter sentences, stronger verbs, and a bolder hook; emoji
 density still follows the 2–4 accent range. Avoid these AI-slop tells (Vale catches
 the lexical ones; the structural ones are on you):
-- **"not just X, but Y"** and "it's not about… it's about…" — say the one true thing.
-- **Uniform sentence rhythm** — vary length or it reads like a bot.
-- **Hollow openers** ("In today's world…", "As we all know…") — open on the point.
+- **No em dashes (`—`) in drafted copy.** Use a comma, colon, semicolon, period,
+  or parentheses instead. Vale and the platform checker must both reject them.
+- **"not just X, but Y"** and "it's not about… it's about…": say the one true thing.
+- **Uniform sentence rhythm**: vary length or it reads like a bot.
+- **Hollow openers** ("In today's world…", "As we all know…"): open on the point.
 - No vague filler, no jargon without a plain-language anchor, no humor near bad
   news, don't lecture the reader (from impeccable's ux-writing).
 
@@ -98,7 +100,7 @@ block, so the user copies native formatting rather than raw markup.
 ### 3. Vale gate both drafts
 
 Lint **both platform drafts separately**. First waive any alert on text inside
-quotation marks or on a proper noun—never edit a quote or a name to satisfy the
+quotation marks or on a proper noun; never edit a quote or a name to satisfy the
 linter.
 
 ```bash
@@ -118,16 +120,16 @@ possible so the skill remains portable.
 - **Clean** → proceed.
 - **Alerts** (after the quote/name waiver) → revise those lines, run **once**
   more, then proceed and list any residual alerts. Do NOT loop.
-- **Any vale failure** — binary missing, config not found, or nonzero without
+- **Any vale failure**: binary missing, config not found, or nonzero without
   alerts → skip the gate, read the wordlists in `styles/Editorial/*.yml`,
-  self-check the draft against them, and note "vale unavailable — reduced check."
+  self-check the draft against them, and note "vale unavailable: reduced check."
   (This skill is **portable and vale-optional**, not self-contained.)
 
 ### 4. Validate length, then emit
 
-**Validate and count each projected message with the script — don't eyeball it.**
-The checker rejects malformed bold markers, Unicode mathematical-bold glyphs,
-`•` list markers, and whole-message code/quote wrappers. Telegram count strips
+**Validate and count each projected message with the script: don't eyeball it.**
+The checker rejects em dashes, malformed bold markers, Unicode mathematical-bold
+glyphs, `•` list markers, and whole-message code/quote wrappers. Telegram count strips
 supported formatting markers first, then counts UTF-16 units in the rendered
 text. Write each message to a temp file:
 
@@ -157,7 +159,7 @@ message stays fenced so its markdown source remains literal; use `~~~` if the
 message itself contains ```` ``` ````. **Never fence, quote, indent, or wrap the
 Telegram message in inline code.** Telegram preserves a copied fenced block as
 preformatted/code text, which breaks the intended paste-and-send result. The
-platform titles are mandatory—never rely on output order to identify them.
+platform titles are mandatory; never rely on output order to identify them.
 Apart from these titles, include no counts or commentary. Add an extra line only
 when something needs action: an over-limit split or unresolved Vale alerts.
 

@@ -2,6 +2,9 @@
 
 Discord and Telegram receive separately authored messages based on the same fact brief. Do not reuse one finished body and swap formatting. Use native formatting on both platforms; never imitate bold with Unicode mathematical characters.
 
+Both platforms forbid em dashes (`—`) in drafted copy. Use a comma, colon,
+semicolon, period, or parentheses instead.
+
 ## Discord
 
 | Feature | Syntax |
@@ -47,4 +50,4 @@ python scripts/lede.py check telegram --file telegram.txt
 python scripts/lede.py compare --discord-file discord.txt --telegram-file telegram.txt
 ```
 
-The checker rejects malformed bold markers, Unicode mathematical alphanumeric glyphs, `•` list markers, and whole-message code/quote wrappers. Telegram length is measured on rendered text after supported formatting markers are removed. The comparison gate rejects substantial drafts with normalized similarity of 0.900 or higher.
+The checker rejects em dashes, malformed bold markers, Unicode mathematical alphanumeric glyphs, `•` list markers, and whole-message code/quote wrappers. Telegram length is measured on rendered text after supported formatting markers are removed. The comparison gate rejects substantial drafts with normalized similarity of 0.900 or higher.

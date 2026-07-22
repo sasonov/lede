@@ -19,6 +19,7 @@ from difflib import SequenceMatcher
 
 LIMITS = {"discord": 2000, "telegram": 4096}
 _MATH_ALNUM_RE = re.compile(r"[\U0001D400-\U0001D7FF]")
+_EM_DASH_RE = re.compile(r"—")
 _DOT_BULLET_RE = re.compile(r"(?m)^\s*•\s+")
 _NON_HYPHEN_BULLET_RE = re.compile(r"(?m)^\s*[+*]\s+")
 _TELEGRAM_HEADING_RE = re.compile(r"(?m)^#{1,6}\s+")
@@ -100,6 +101,8 @@ def validate(platform, s):
     errors = []
     if _MATH_ALNUM_RE.search(s):
         errors.append("Unicode mathematical alphanumeric glyphs are forbidden; use native bold")
+    if _EM_DASH_RE.search(s):
+        errors.append("em dashes are forbidden; use a comma, colon, semicolon, period, or parentheses")
     if _DOT_BULLET_RE.search(s):
         errors.append("dot bullets are forbidden; use literal '- ' list markers")
     if _NON_HYPHEN_BULLET_RE.search(s):
@@ -153,6 +156,8 @@ def _selftest():
     assert validate("telegram", "## Title")
     assert validate("telegram", "• Item")
     assert validate("telegram", "𝗕𝗼𝗹𝗱")
+    assert validate("telegram", "Label — text")
+    assert validate("discord", "Label — text")
     assert validate("telegram", "**broken")
     assert validate("telegram", "**crosses\nlines**")
     assert validate("telegram", "* Item")

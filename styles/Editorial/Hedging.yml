@@ -1,5 +1,5 @@
 extends: existence
-message: "Hedge/filler: '%s' — delete it, the sentence is stronger without."
+message: "Hedge/filler: '%s'; delete it, the sentence is stronger without."
 level: error
 ignorecase: true
 tokens:

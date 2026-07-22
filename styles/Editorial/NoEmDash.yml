@@ -1,0 +1,6 @@
+extends: existence
+message: "Em dashes are forbidden in channel copy; use a comma, colon, semicolon, period, or parentheses."
+level: error
+nonword: true
+tokens:
+  - "—"

@@ -1,5 +1,5 @@
 extends: existence
-message: "Overused AI construction: '%s' — rewrite as a direct statement."
+message: "Overused AI construction: '%s'; rewrite as a direct statement."
 level: error
 ignorecase: true
 nonword: true
