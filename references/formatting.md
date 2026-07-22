@@ -37,7 +37,8 @@ The target is roughly 30–40% more visual guidance than the previous minimalist
 
 - Typical short announcement: 2–3 emoji.
 - Typical multi-section announcement: 3–4 emoji.
-- Good placements: title, launch/feature section, requirements or warning section, feedback/CTA.
+- Choose placements after each platform draft is complete. Do not reuse an emoji
+  plan as a substitute for independently authored structure.
 - Avoid emoji bullets on every line, decorative clusters, repeated emoji, and mid-sentence interruptions.
 
 ## Validation
@@ -50,4 +51,4 @@ python scripts/lede.py check telegram --file telegram.txt
 python scripts/lede.py compare --discord-file discord.txt --telegram-file telegram.txt
 ```
 
-The checker rejects em dashes, malformed bold markers, Unicode mathematical alphanumeric glyphs, `•` list markers, and whole-message code/quote wrappers. Telegram length is measured on rendered text after supported formatting markers are removed. The comparison gate rejects substantial drafts with normalized similarity of 0.900 or higher.
+The checker rejects generic label stacks, unsupported urgency, em dashes, malformed bold markers, Unicode mathematical alphanumeric glyphs, `•` list markers, and whole-message code/quote wrappers. Telegram length is measured on rendered text after supported formatting markers are removed. The comparison gate uses character similarity, token overlap, and section order; it also rejects identical short drafts.

@@ -127,21 +127,21 @@ Docs: [example.com/v2](https://example.com/v2)
 
 **Telegram**
 
-**🚀 v2.3 is live**
+**⚠️ Rotate old API keys by August 1**
 
-**🌙 Dark mode** landed, and cold starts are **40% faster**.
+Old API keys stop working on August 1. Rotate yours before then.
 
-⚠️ **Heads up, breaking change:** old API keys stop working **August 1**. Rotate yours before then.
+🚀 v2.3 shipped today with dark mode and **40% faster cold starts**.
 
 📚 Docs: https://example.com/v2
 
 ## How it works
 
 1. **Extract** one platform-neutral fact brief: facts only, not reusable prose.
-2. **Author** Discord and Telegram independently. Hooks, ordering, transitions,
-   CTAs, and line breaks can differ; formatting-only clones are rejected.
-3. **Lint** both drafts separately with Vale against AI-slop wordlists.
-4. **Validate** formatting and length with `scripts/lede.py check`, then enforce
+2. **Author** Discord and Telegram independently with different information architecture.
+3. **Review** both drafts against the mandatory structural anti-slop rubric.
+4. **Lint** both drafts separately with Vale against AI-slop wordlists.
+5. **Validate** structure, formatting, and length with `scripts/lede.py check`, then enforce
    separate authorship with `scripts/lede.py compare`.
 
 Message text is always passed to the helper via `--file` (or stdin), never as a
@@ -166,7 +166,7 @@ SKILL.md                  the instructions the agent follows
 references/formatting.md  native Discord + Telegram formatting rules
 scripts/lede.py           formatting validator + per-platform length checker
 .vale.ini                 vale config (local styles, no `vale sync`)
-styles/Editorial/*.yml    Slop / Hedging / NotJust wordlists
+styles/Editorial/*.yml    lexical slop, hedging, urgency, and punctuation rules
 ```
 
 ## Telegram accessibility

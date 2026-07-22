@@ -1,0 +1,25 @@
+extends: existence
+message: "Generic launch or urgency language: '%s'; replace it with a concrete fact, deadline, consequence, or action."
+level: error
+ignorecase: true
+nonword: true
+tokens:
+  - "thrilled to announce"
+  - "bold new era"
+  - "the future is here"
+  - "take (?:your|it|things) to the next level"
+  - "be part of the journey"
+  - "continued commitment"
+  - "meaningful impact"
+  - "lasting value"
+  - "the best is yet to come"
+  - "important step forward"
+  - "new possibilities"
+  - "building the future together"
+  - "stay tuned"
+  - "ready to get started"
+  - "do not miss your chance"
+  - "act now"
+  - "do not wait"
+  - "cannot wait"
+  - "risk falling behind"

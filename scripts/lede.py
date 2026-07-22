@@ -32,6 +32,19 @@ _EMOJI_RE = re.compile(
     "\U00002600-\U000027BF"
     "]"
 )
+_WORD_RE = re.compile(r"[a-z0-9]+(?:'[a-z0-9]+)?", re.I)
+_BOLD_LABEL_RE = re.compile(r"^\s*\*\*([^*]{2,60})\*\*(?::)?(?:\s+.*)?$")
+_HEADING_LABEL_RE = re.compile(r"^\s*#{1,6}\s+(.{2,60})$")
+_GENERIC_LABEL_RE = re.compile(
+    r"^(?:what(?:'s| is)?\b|why\b|how\b|get ready\b|act now\b|do not wait\b|"
+    r"watch for\b|if the\b|next steps?\b|what you need to do\b)",
+    re.I,
+)
+_UNSUPPORTED_URGENCY_RE = re.compile(
+    r"\b(?:act now|do not wait|cannot wait|do not miss your chance|"
+    r"before it is too late|risk falling behind)\b",
+    re.I,
+)
 
 
 def utf16_length(s):
@@ -94,11 +107,45 @@ def comparable_text(s):
 
 
 def similarity(discord_text, telegram_text):
-    return SequenceMatcher(None, comparable_text(discord_text), comparable_text(telegram_text)).ratio()
+    return SequenceMatcher(
+        None,
+        comparable_text(discord_text),
+        comparable_text(telegram_text),
+        autojunk=False,
+    ).ratio()
+
+
+def token_similarity(discord_text, telegram_text):
+    left = set(_WORD_RE.findall(comparable_text(discord_text)))
+    right = set(_WORD_RE.findall(comparable_text(telegram_text)))
+    if not left and not right:
+        return 1.0
+    return len(left & right) / len(left | right)
+
+
+def section_labels(s):
+    labels = []
+    for line in s.splitlines():
+        match = _HEADING_LABEL_RE.match(line) or _BOLD_LABEL_RE.match(line)
+        if match:
+            label = re.sub(r"[^a-z0-9']+", " ", match.group(1).lower()).strip()
+            if label:
+                labels.append(label)
+    return labels
+
+
+def structural_errors(s):
+    errors = []
+    generic = [label for label in section_labels(s) if _GENERIC_LABEL_RE.search(label)]
+    if len(generic) >= 3:
+        errors.append("formulaic generic-label stack; use prose-first structure or fact-specific labels")
+    if _UNSUPPORTED_URGENCY_RE.search(s):
+        errors.append("unsupported urgency language; state the sourced deadline or consequence directly")
+    return errors
 
 
 def validate(platform, s):
-    errors = []
+    errors = structural_errors(s)
     if _MATH_ALNUM_RE.search(s):
         errors.append("Unicode mathematical alphanumeric glyphs are forbidden; use native bold")
     if _EM_DASH_RE.search(s):
@@ -167,9 +214,12 @@ def _selftest():
     assert validate("telegram", "> **Title**\n>\n> - Item")
     assert validate("telegram", "    **Title**\n\n    - Item")
     assert validate("telegram", "**Title**\n\n`short code`\n\n- Item") == []
+    assert validate("telegram", "**What changed**\nFact.\n\n**Why it matters**\nFiller.\n\n**What's next**\nMore filler.")
+    assert validate("discord", "## Act now\nDo not wait before it is too late.")
     assert emoji_count("🚀 Text 🎯") == 2
     assert similarity("## **Same text**", "**Same text**") == 1.0
     assert similarity("Discord opens with the launch details.", "Telegram starts with a short user call to action.") < 0.7
+    assert token_similarity("One shared fixed fact", "One shared fixed fact") == 1.0
     print("ok")
 
 
@@ -180,11 +230,25 @@ def _compare_args(argv):
         discord_text = f.read()
     with open(argv[3], encoding="utf-8") as f:
         telegram_text = f.read()
-    ratio = similarity(discord_text, telegram_text)
-    print(f"platform similarity: {ratio:.3f} (must be < 0.900)")
-    substantial = min(len(comparable_text(discord_text)), len(comparable_text(telegram_text))) >= 200
-    if substantial and ratio >= 0.900:
-        print("ERROR: Discord and Telegram are near-identical; author separate platform messages", file=sys.stderr)
+    left = comparable_text(discord_text)
+    right = comparable_text(telegram_text)
+    char_ratio = similarity(discord_text, telegram_text)
+    token_ratio = token_similarity(discord_text, telegram_text)
+    labels_left = section_labels(discord_text)
+    labels_right = section_labels(telegram_text)
+    print(f"platform character similarity: {char_ratio:.3f}")
+    print(f"platform token similarity: {token_ratio:.3f}")
+    errors = []
+    minimum = min(len(left), len(right))
+    if minimum >= 40 and left == right:
+        errors.append("Discord and Telegram are identical after formatting is removed")
+    elif minimum >= 80 and max(char_ratio, token_ratio) >= 0.860:
+        errors.append("Discord and Telegram are near-identical; author separate platform messages")
+    if len(labels_left) >= 3 and labels_left == labels_right:
+        errors.append("Discord and Telegram reuse the same multi-section information architecture")
+    for error in errors:
+        print(f"ERROR: {error}", file=sys.stderr)
+    if errors:
         return 1
     return 0
 

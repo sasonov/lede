@@ -49,29 +49,25 @@ Extract a short platform-neutral checklist of required facts, names, dates,
 links, warnings, and calls to action. This is a factual source sheet, not reusable
 finished prose. Both platform drafts must preserve every required fact.
 
-Use this default editorial shape when it fits, but draft it independently for
-each platform in step 2:
-
-- **Hook**: one sharp line, the single most important thing. No preamble.
-- **A few tight sections**: a short bold label + 1–3 sentences each. Lead with
-  what changed, not background. Group related facts.
-- **Close only when there's a real one**: a consequence or a next step. Do NOT
-  manufacture a takeaway; a hollow closer that restates the intro is itself
-  AI-slop. If the content has no close, end on the last real point.
+Choose a shape from the facts instead of forcing every announcement into the
+same template. **Default to prose-first.** Use compact bullets, Q&A, a timeline,
+a warning-first structure, or a single-update paragraph only when that shape
+makes the facts easier to find. Labels are optional and must name genuinely
+different operational facts. Never require a hook, section stack, CTA, or close
+when the source does not supply one. Do not use more than two generic labels.
 
 **Length:** aim for ≤ ~1900 characters per platform draft. This is a drafting
-guide, not the check. The real validation is in step 4.
+guide, not the check. The real validation is in step 5.
 
 **Emoji density:** use roughly one-third more emoji than a minimalist corporate
-post. A standard 3–5-section announcement should normally contain **2–4 meaningful
-emoji accents** across the title and key section headers. Discord and Telegram may
-use the same emoji plan. Do not put emoji on every bullet, stack decorative
+post. A standard announcement should normally contain **2–4 meaningful emoji
+accents** across the title and selected factual anchors. Place emoji independently
+after each platform's prose is final. Do not put emoji on every bullet, stack decorative
 clusters (`🚀🔥✅`), or interrupt sentences with them.
 
 **Voice**: say it once, plainly. Active voice, concrete nouns, no hedging, no
-build-up. `punchy` = shorter sentences, stronger verbs, and a bolder hook; emoji
-density still follows the 2–4 accent range. Avoid these AI-slop tells (Vale catches
-the lexical ones; the structural ones are on you):
+build-up. `punchy` means tighter editing, not fake urgency, clipped sentence
+stacks, or a manufactured hook. Avoid these AI-slop tells:
 - **No em dashes (`—`) in drafted copy.** Use a comma, colon, semicolon, period,
   or parentheses instead. Vale and the platform checker must both reject them.
 - **"not just X, but Y"** and "it's not about… it's about…": say the one true thing.
@@ -83,9 +79,9 @@ the lexical ones; the structural ones are on you):
 ### 2. Write two separate send-ready messages
 
 Use the same fact brief, but **author Discord and Telegram independently**. They
-must be separate messages, not one body with formatting swapped. The hook,
-section order, sentence length, transitions, CTA, and line breaks may differ to
-fit each platform. Do not copy the complete prose from one draft into the other.
+must be separate messages, not one body with formatting swapped. Multi-section
+posts must use different information architecture, not merely synonyms: change
+the opening, order, grouping, rhythm, and close to fit each platform. Do not copy the complete prose from one draft into the other.
 Short fixed facts may match verbatim. See `references/formatting.md`.
 
 **Discord** (renders on user paste-and-send): `##` / `###` headers, `-` bullets,
@@ -97,11 +93,28 @@ use **bare URLs**. Do not use `##` headings, `•` list markers, HTML tags, or U
 mathematical-bold glyphs. Emit Telegram as ordinary rendered text, not a code
 block, so the user copies native formatting rather than raw markup.
 
-### 3. Vale gate both drafts
+### 3. Mandatory editorial anti-slop review
 
-Lint **both platform drafts separately**. First waive any alert on text inside
-quotation marks or on a proper noun; never edit a quote or a name to satisfy the
-linter.
+Before Vale, record an internal **pass or revise** decision for every question
+below. Do not emit the checklist. Any failure requires one rewrite and a second
+review. A draft cannot proceed with a failed item.
+
+1. Does every section add a new fact rather than restate one?
+2. Are there no more than two label-plus-explanation sections?
+3. Are generic imperative or question labels absent?
+4. Is every urgency claim supported by a sourced deadline or consequence?
+5. Does the copy avoid telling readers obvious things or manufacturing stakes?
+6. Is the hook specific enough that it could not introduce another product?
+7. Does any CTA name a concrete action, destination, and reason?
+8. Do sentence lengths and openings visibly vary?
+9. Does the close add information instead of summarizing the opening?
+10. Would deleting any section remove a real fact? If not, delete that section.
+
+### 4. Vale gate both drafts
+
+Lint **both platform drafts separately**. Waive only an attributed, source-verbatim
+quotation or the exact proper-name span. Never waive a whole sentence merely
+because it contains a quote or name.
 
 ```bash
 # Write the draft to a temp file first, then lint it. --config is REQUIRED
@@ -118,18 +131,18 @@ For this Hermes profile, the verified skill directory is
 possible so the skill remains portable.
 
 - **Clean** → proceed.
-- **Alerts** (after the quote/name waiver) → revise those lines, run **once**
-  more, then proceed and list any residual alerts. Do NOT loop.
-- **Any vale failure**: binary missing, config not found, or nonzero without
-  alerts → skip the gate, read the wordlists in `styles/Editorial/*.yml`,
-  self-check the draft against them, and note "vale unavailable: reduced check."
-  (This skill is **portable and vale-optional**, not self-contained.)
+- **Alerts** (after the narrow quote/name waiver) → revise those lines and run
+  once more. Residual alerts block delivery in the verified Hermes environment.
+- **Any Vale execution failure in Hermes** blocks delivery. Do not treat a
+  missing binary, missing config, or unexplained nonzero exit as a pass.
+- In other portable environments only, report "Vale unavailable: reduced check"
+  and perform a manual wordlist check rather than claiming full validation.
 
-### 4. Validate length, then emit
+### 5. Validate structure, separation, and length, then emit
 
 **Validate and count each projected message with the script: don't eyeball it.**
-The checker rejects em dashes, malformed bold markers, Unicode mathematical-bold
-glyphs, `•` list markers, and whole-message code/quote wrappers. Telegram count strips
+The checker rejects generic label stacks, unsupported urgency, em dashes,
+malformed bold markers, Unicode mathematical-bold glyphs, `•` list markers, and whole-message code/quote wrappers. Telegram count strips
 supported formatting markers first, then counts UTF-16 units in the rendered
 text. Write each message to a temp file:
 
@@ -139,9 +152,9 @@ python "<skill-dir>/scripts/lede.py" check telegram --file telegram-msg.txt
 python "<skill-dir>/scripts/lede.py" compare --discord-file discord-msg.txt --telegram-file telegram-msg.txt
 ```
 
-`compare` rejects substantial drafts that are near-identical after formatting is
-removed. If it fails, rewrite one platform version; cosmetic marker changes do
-not count as separate authorship.
+`compare` rejects identical and near-identical drafts using character, token, and
+section-order checks. If it fails, rewrite one platform version; cosmetic marker
+or synonym changes do not count as separate authorship.
 
 If either prints `OVER` (nonzero exit), split into numbered parts (`(1/2)`) and
 run `check` on **each part** until all pass; when the two channels split
