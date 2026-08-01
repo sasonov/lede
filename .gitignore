@@ -1,0 +1,6 @@
+# Maintenance card templates. Generated from a design master that lives in a
+# private repo (X-Workflow) by:
+#   LEDE_SKILL_DIR=<this dir> python tools/build_card_template.py --all
+# They carry brand assets, so they stay local rather than shipping with the skill.
+# scripts/card.py prints the regeneration command when they are absent.
+cards/
