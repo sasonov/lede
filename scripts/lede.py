@@ -144,6 +144,26 @@ def structural_errors(s):
     return errors
 
 
+def flush_paragraphs(s):
+    """1-based line numbers of lines drawn flush against the line above.
+
+    Telegram has no paragraph spacing of its own, so two non-empty lines in a
+    row arrive as one unbroken block however well the prose reads. Consecutive
+    `- ` items are the exception: a list belongs tight, and the blank lines go
+    before and after it instead.
+    """
+    lines = s.split("\n")
+    hits = []
+    for i in range(1, len(lines)):
+        prev, cur = lines[i - 1].strip(), lines[i].strip()
+        if not prev or not cur:
+            continue
+        if prev.startswith("- ") and cur.startswith("- "):
+            continue
+        hits.append(i + 1)
+    return hits
+
+
 def validate(platform, s):
     errors = structural_errors(s)
     if _MATH_ALNUM_RE.search(s):
@@ -166,6 +186,13 @@ def validate(platform, s):
         errors.append("Telegram links must be bare URLs, not masked Markdown links")
     if platform == "telegram" and (wrapper := whole_message_wrapper(s)):
         errors.append(f"Telegram output must be ordinary rendered text, not a whole-message {wrapper}")
+    if platform == "telegram" and (flush := flush_paragraphs(s)):
+        shown = ", ".join(str(n) for n in flush[:6])
+        more = "" if len(flush) <= 6 else f" (+{len(flush) - 6} more)"
+        errors.append(
+            f"Telegram paragraphs must be separated by a blank line; line(s) {shown}{more} "
+            "sit flush against the line above and will send as one wall of text "
+            "(consecutive '- ' list items are the only exception)")
     return errors
 
 
@@ -200,6 +227,15 @@ def _selftest():
     assert length("discord", "**Bold** 🚀") == len("**Bold** 🚀")
     assert validate("telegram", "**Title**\n\n- Item") == []
     assert validate("discord", "## 🚀 Title\n\n- Item") == []
+    # paragraph separation: the real reported failure was four prose lines with
+    # no blank line anywhere, which sends as one wall of text.
+    assert flush_paragraphs("One.\n\nTwo.\n\nThree.") == []
+    assert flush_paragraphs("One.\nTwo.\nThree.") == [2, 3]
+    assert flush_paragraphs("**Title**\n\n- A\n- B\n\nAfter.") == []   # list stays tight
+    assert flush_paragraphs("- A\nProse.") == [2]                      # list then prose is not
+    assert flush_paragraphs("**Title**\nProse.") == [2]
+    assert validate("telegram", "One.\nTwo.\nThree.")
+    assert validate("discord", "One.\nTwo.\nThree.") == []             # telegram-only rule
     assert validate("telegram", "## Title")
     assert validate("telegram", "• Item")
     assert validate("telegram", "𝗕𝗼𝗹𝗱")

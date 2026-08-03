@@ -23,11 +23,12 @@ semicolon, period, or parentheses instead.
 ## Telegram
 
 - Use normal native bold for titles, headers, and key terms. In agent source, mark it as `**bold**`; the Telegram rendering surface converts it to a bold entity.
-- Native formatting survives the copy-paste workflow on a surface that renders the message as a real Telegram message. On a terminal it does not: the reply is rendered as markdown, which collapses the blank lines between paragraphs, so there the message is emitted inside a fence (SKILL step 5, "Fencing the Telegram message"). Do not convert letters to Unicode mathematical-bold glyphs.
+- Native formatting survives the copy-paste workflow. Do not convert letters to Unicode mathematical-bold glyphs.
+- Separate every paragraph with a blank line. Telegram draws consecutive lines flush against each other, so single-newline text sends as one wall of text. Consecutive `- ` list items are the exception; the blank lines go before and after the list. The checker enforces this.
 - Use literal `-` list markers, not `•`.
 - Use bare URLs so Telegram auto-links them.
 - Do not use Markdown headings (`##`) or HTML tags.
-- Never write the message so that it is itself a code block, quote, or inline-code wrapper; the checker rejects that. Whether the finished message is *presented* fenced or unfenced is a separate, surface-dependent decision made at emit time (SKILL step 5, "Fencing the Telegram message").
+- Emit the Telegram message as ordinary rendered text, never inside a code block, quote, or inline-code wrapper.
 - Character limit: 4096 UTF-16 code units after formatting entities are parsed.
 - Use 2–4 meaningful emoji accents in a typical 3–5-section announcement. A longer post may use one additional accent when it improves scanning.
 
