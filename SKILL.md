@@ -200,6 +200,12 @@ are narrow and a dash reads as a hyphenated word at card size.
   Use whatever your runtime actually offers for this. If it offers nothing, say
   so and fall back to the path. Never report a card as sent when only the file
   exists.
+- **Telegram quality rule:** Telegram may recompress a `.png` sent as a native
+  photo and downscale images whose long edge exceeds 2560 px. For a 3200×1200
+  card, create a 2560×960 preview with Lanczos resampling and send that as the
+  native photo. Also place the untouched 3200×1200 PNG in a ZIP and attach the
+  ZIP as the lossless posting asset. Inspect the optimized preview before
+  delivery. Do not mistake Telegram preview degradation for a bad source PNG.
 - **A terminal** (Claude Code, plain CLI): print the **absolute** path, since the
   user picks it in a file dialog. Step 5 says where that line goes.
 
