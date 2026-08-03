@@ -25,6 +25,10 @@ _NON_HYPHEN_BULLET_RE = re.compile(r"(?m)^\s*[+*]\s+")
 _TELEGRAM_HEADING_RE = re.compile(r"(?m)^#{1,6}\s+")
 _MARKDOWN_LINK_RE = re.compile(r"\[([^\]]+)\]\(([^)]+)\)")
 _HTML_TAG_RE = re.compile(r"</?(?:b|strong|i|em|u|s|code|pre|a)(?:\s+[^>]*)?>", re.I)
+# Discord custom/server emoji, static <:name:id> and animated <a:name:id>. They
+# are a Discord server feature: everywhere else the raw code is what the reader
+# sees, so they must never reach the Telegram draft.
+_CUSTOM_EMOJI_RE = re.compile(r"<a?:\w+:\d+>")
 _EMOJI_RE = re.compile(
     "["
     "\U0001F1E6-\U0001F1FF"
@@ -184,6 +188,11 @@ def validate(platform, s):
         errors.append("Telegram output must use native bold source, not HTML tags")
     if platform == "telegram" and _MARKDOWN_LINK_RE.search(s):
         errors.append("Telegram links must be bare URLs, not masked Markdown links")
+    if platform == "telegram" and (custom := _CUSTOM_EMOJI_RE.findall(s)):
+        found = ", ".join(sorted(set(custom))[:3])
+        errors.append(
+            f"Discord custom emoji are Discord-only and arrive on Telegram as raw "
+            f"text: {found}. Use a Unicode emoji in the Telegram draft instead")
     if platform == "telegram" and (wrapper := whole_message_wrapper(s)):
         errors.append(f"Telegram output must be ordinary rendered text, not a whole-message {wrapper}")
     if platform == "telegram" and (flush := flush_paragraphs(s)):
@@ -236,6 +245,15 @@ def _selftest():
     assert flush_paragraphs("**Title**\nProse.") == [2]
     assert validate("telegram", "One.\nTwo.\nThree.")
     assert validate("discord", "One.\nTwo.\nThree.") == []             # telegram-only rule
+
+    # brand emoji: welcome on Discord, raw text on Telegram
+    px = "<:PredixaLogo:1488555443629592686>"
+    tmx = "<:TMX_ecosystem_logo:1526147965469589504>"
+    assert validate("discord", f"{px} **Title**\n\n- Item") == []
+    assert validate("discord", f"{tmx} **Title**\n\n- Item") == []
+    for bad in (px, tmx, "<a:spin:12345>"):
+        errs = validate("telegram", f"{bad} **Title**\n\n- Item")
+        assert any("custom emoji" in e for e in errs), (bad, errs)
     assert validate("telegram", "## Title")
     assert validate("telegram", "• Item")
     assert validate("telegram", "𝗕𝗼𝗹𝗱")

@@ -24,6 +24,7 @@ semicolon, period, or parentheses instead.
 
 - Use normal native bold for titles, headers, and key terms. In agent source, mark it as `**bold**`; the Telegram rendering surface converts it to a bold entity.
 - Native formatting survives the copy-paste workflow. Do not convert letters to Unicode mathematical-bold glyphs.
+- Never use Discord custom server emoji (`<:PredixaLogo:1488555443629592686>`, `<:TMX_ecosystem_logo:1526147965469589504>`, or any `<:name:id>` / `<a:name:id>` code). Discord resolves those; Telegram shows the raw string. Use Unicode emoji here. The checker enforces this.
 - Separate every paragraph with a blank line. Telegram draws consecutive lines flush against each other, so single-newline text sends as one wall of text. Consecutive `- ` list items are the exception; the blank lines go before and after the list. The checker enforces this.
 - Use literal `-` list markers, not `•`.
 - Use bare URLs so Telegram auto-links them.

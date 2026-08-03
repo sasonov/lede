@@ -67,7 +67,8 @@ guide, not the check. The real validation is in step 5.
 post. A standard announcement should normally contain **2–4 meaningful emoji
 accents** across the title and selected factual anchors. Place emoji independently
 after each platform's prose is final. Do not put emoji on every bullet, stack decorative
-clusters (`🚀🔥✅`), or interrupt sentences with them.
+clusters (`🚀🔥✅`), or interrupt sentences with them. Discord's title also takes
+the brand's custom server emoji, which Telegram must never carry (step 2).
 
 **Voice**: say it once, plainly. Active voice, concrete nouns, no hedging, no
 build-up. `punchy` means tighter editing, not fake urgency, clipped sentence
@@ -90,6 +91,26 @@ Short fixed facts may match verbatim. See `references/formatting.md`.
 
 **Discord** (renders on user paste-and-send): `##` / `###` headers, `-` bullets,
 `**bold**`, `*italic*`, `[label](url)`, ```` ```lang … ``` ```` code.
+
+**Brand emoji — Discord only, never Telegram.** When the announcement is about
+Predixa or the TMX Ecosystem, open the Discord title with that brand's custom
+server emoji:
+
+| Brand | Code |
+|---|---|
+| Predixa | `<:PredixaLogo:1488555443629592686>` |
+| TMX Ecosystem | `<:TMX_ecosystem_logo:1526147965469589504>` |
+
+One per message, in the title line, matching the brand the news is about. It
+counts as one of the message's emoji accents, so do not also stack a Unicode
+emoji beside it.
+
+These are Discord **server** emoji: the `<:name:id>` form is resolved by Discord
+and by nothing else. Put one in the Telegram draft and the reader sees the
+literal string `<:PredixaLogo:1488555443629592686>` sitting in the message. The
+Telegram draft therefore uses ordinary Unicode emoji only, exactly as before,
+and the step 5 checker rejects any Telegram message containing one of these
+codes. A brand's emoji never crosses into the other brand's announcement either.
 
 **Telegram:** use `**normal bold**` for the title, headers, and key terms; use
 literal `-` list markers; use 2–4 meaningful emoji accents for a normal post; and
