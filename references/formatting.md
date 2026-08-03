@@ -23,7 +23,7 @@ semicolon, period, or parentheses instead.
 ## Telegram
 
 - Use normal native bold for titles, headers, and key terms. In agent source, mark it as `**bold**`; the Telegram rendering surface converts it to a bold entity.
-- Native formatting survives the copy-paste workflow. Do not convert letters to Unicode mathematical-bold glyphs.
+- Native formatting survives the copy-paste workflow on a surface that renders the message. Copied out of a terminal it does not: the blank lines between paragraphs collapse, so on a terminal the user copies the message from the file instead (SKILL step 5, "Telegram on a terminal"). Do not convert letters to Unicode mathematical-bold glyphs.
 - Use literal `-` list markers, not `•`.
 - Use bare URLs so Telegram auto-links them.
 - Do not use Markdown headings (`##`) or HTML tags.

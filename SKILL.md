@@ -37,6 +37,9 @@ with a terminal + file-writing tool. Two conventions:
   contain `$(...)`, backticks, or `|` that the shell would execute. Always write
   the text to a temp file with your file tool, then pass `--file <path>` to
   `lede.py` (or pipe via stdin). The commands below only ever carry a filename.
+  One exception: on a terminal the Telegram message file is handed to the user
+  and must outlive the run, so it goes somewhere durable, not in scratch (step
+  5, "Where that file goes").
 
 ## Inputs
 
@@ -244,29 +247,45 @@ message itself contains ```` ``` ````. **Never fence, quote, indent, or wrap the
 Telegram message in inline code.** Telegram preserves a copied fenced block as
 preformatted/code text, which breaks the intended paste-and-send result. The
 platform titles are mandatory; never rely on output order to identify them.
-Apart from these titles, include no counts or commentary. Add an extra line only
-when something needs action: an over-limit split, unresolved Vale alerts, a card
-from step 4b, or the Telegram source file below. Those lines go **above** both
-sections and never inside a message: `Attach: <absolute path>` on a terminal, or
-`Attached above.` when you sent the PNG into the chat.
+Apart from these titles, include no counts or commentary. The only other lines
+allowed are handover/action lines, and they all go **above** both sections,
+never inside a message, in this order:
+
+1. `Telegram source: <absolute path>` — on a terminal, always (see below).
+2. `Attach: <absolute path>` on a terminal, or `Attached above.` when you sent
+   the PNG into the chat — whenever step 4b produced a card.
+3. An over-limit split note or unresolved Vale alerts, if either applies.
 
 **Telegram on a terminal.** The unfenced inline message is written for a surface
-that renders it. A terminal does not: copying it out is line-based, the blank
-lines that separate the paragraphs are lost, and the message lands in Telegram
-as one wall of text with no breathing room. So when you are answering in a
-terminal, the inline section is for **reading and approving** the wording, and
-the file is what gets **copied**:
+that renders it *and lets you copy the rendered text*. A terminal renders it but
+gives you back only what is on screen, and a markdown renderer collapses the
+blank lines between prose paragraphs. So the message the user copies out of the
+terminal arrives in Telegram as one wall of text with no breathing room. This is
+also why Discord needs no such remedy: its message sits in a fence, and fenced
+content is reproduced verbatim, blank lines included. The unfenced Telegram
+message is the only one that loses them.
 
-- Keep the `telegram-msg.txt` you already wrote for the checker in step 5. Do
-  not delete it and do not put it anywhere a cleanup sweeps before the user has
-  sent the message.
-- Print its absolute path on its own line above both sections:
+On a terminal, therefore, the inline section is for **reading and approving**
+the wording, and the file is what gets **copied**:
+
+- Keep the `telegram-msg.txt` you wrote for the checker in step 5 and print its
+  absolute path on its own line above both sections:
   `Telegram source: <absolute path>`
 - Say nothing else about it. The user opens that file and copies from there, so
   every blank line arrives intact.
 
-On a chat surface that renders the message (Hermes Telegram), the inline text
-copies correctly and this line is unnecessary; do not add it there.
+**Where that file goes.** Somewhere the user can still open after the run: the
+current working directory, or an output folder they named. **Not** the harness's
+scratch/temp area — those are swept, and a dead path defeats the whole point.
+This one file is the exception to the "temp file" convention in Runtime above;
+the Discord draft and any lint input may stay temporary.
+
+**Which surface am I on?** Only a chat surface that renders the message for the
+user — Hermes Telegram, or any harness whose reply appears as a real Telegram
+message — copies correctly; there, skip the `Telegram source:` line entirely.
+Everywhere else, including any case you are unsure about, take the terminal
+behaviour and write the file. A file the user did not need costs one line; a
+missing one costs them the message.
 
 ### Links, images, code in the source
 - **URLs** → Discord `[label](url)`; Telegram bare URL.
