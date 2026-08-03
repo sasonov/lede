@@ -153,25 +153,41 @@ def _platform_candidates():
 
 def _playwright_candidates():
     """Chromium from `playwright install chromium`, wherever its cache lives."""
+    caches = []
+    configured = os.environ.get("PLAYWRIGHT_BROWSERS_PATH")
+    if configured and configured != "0":
+        caches.append(configured)
+    hermes_home = os.environ.get("HERMES_HOME")
+    if hermes_home:
+        caches.append(os.path.join(hermes_home, ".cache", "ms-playwright"))
     if sys.platform == "win32":
-        cache = os.path.join(os.environ.get("LOCALAPPDATA", ""), "ms-playwright")
+        caches.append(os.path.join(os.environ.get("LOCALAPPDATA", ""), "ms-playwright"))
     elif sys.platform == "darwin":
-        cache = os.path.expanduser("~/Library/Caches/ms-playwright")
+        caches.append(os.path.expanduser("~/Library/Caches/ms-playwright"))
     else:
-        cache = os.path.expanduser("~/.cache/ms-playwright")
-    for pat in ("chromium-*/chrome-linux64/chrome",
+        caches.append(os.path.expanduser("~/.cache/ms-playwright"))
+    patterns = ("chromium-*/chrome-linux64/chrome",
                 "chromium-*/chrome-linux/chrome",
+                "chromium_headless_shell-*/chrome-headless-shell-linux64/chrome-headless-shell",
+                "chromium_headless_shell-*/chrome-headless-shell-linux/chrome-headless-shell",
                 "chromium-*/chrome-win64/chrome.exe",
                 "chromium-*/chrome-win/chrome.exe",
-                "chromium-*/chrome-mac/Chromium.app/Contents/MacOS/Chromium"):
-        for p in sorted(glob.glob(os.path.join(cache, pat)), reverse=True):
-            yield p                      # newest install first
+                "chromium-*/chrome-mac/Chromium.app/Contents/MacOS/Chromium")
+    seen = set()
+    for cache in caches:
+        if not cache or cache in seen:
+            continue
+        seen.add(cache)
+        for pat in patterns:
+            for p in sorted(glob.glob(os.path.join(cache, pat)), reverse=True):
+                yield p                  # newest install first
 
 
 def find_browser():
-    env = os.environ.get("CARD_BROWSER")
-    if env and os.path.isfile(env):
-        return env
+    for variable in ("CARD_BROWSER", "AGENT_BROWSER_EXECUTABLE_PATH"):
+        env = os.environ.get(variable)
+        if env and os.path.isfile(env):
+            return env
     for name in BROWSER_NAMES:
         p = shutil.which(name)
         if p:
