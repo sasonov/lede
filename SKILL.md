@@ -20,8 +20,10 @@ finished message themselves. Preserve native formatting on both platforms:
 
 - **Discord** → output standard Discord markdown.
 - **Telegram** → output normal bold entities/markdown on a rendering surface such
-  as Hermes Telegram. Native Telegram formatting survives copy-paste in this
-  workflow. Never replace letters with Unicode mathematical-bold characters.
+  as Hermes Telegram. Native Telegram formatting survives copy-paste **there**;
+  it does not survive a copy out of a terminal, which loses the blank lines
+  between paragraphs (see step 5, "Telegram on a terminal"). Never replace
+  letters with Unicode mathematical-bold characters.
 
 ## Runtime (any harness)
 
@@ -211,7 +213,9 @@ copies and that repo's never drift.
 The checker rejects generic label stacks, unsupported urgency, em dashes,
 malformed bold markers, Unicode mathematical-bold glyphs, `•` list markers, and whole-message code/quote wrappers. Telegram count strips
 supported formatting markers first, then counts UTF-16 units in the rendered
-text. Write each message to a temp file:
+text. Write each message to a file. On a terminal `telegram-msg.txt` is not
+throwaway: the user copies the message out of it (see "Telegram on a terminal"
+below), so write it somewhere durable and keep it.
 
 ```bash
 python "<skill-dir>/scripts/lede.py" check discord  --file discord-msg.txt
@@ -241,10 +245,28 @@ Telegram message in inline code.** Telegram preserves a copied fenced block as
 preformatted/code text, which breaks the intended paste-and-send result. The
 platform titles are mandatory; never rely on output order to identify them.
 Apart from these titles, include no counts or commentary. Add an extra line only
-when something needs action: an over-limit split, unresolved Vale alerts, or a
-card from step 4b. The card line goes **above** both sections and never inside a
-message: `Attach: <absolute path>` on a terminal, or `Attached above.` when you
-sent the PNG into the chat.
+when something needs action: an over-limit split, unresolved Vale alerts, a card
+from step 4b, or the Telegram source file below. Those lines go **above** both
+sections and never inside a message: `Attach: <absolute path>` on a terminal, or
+`Attached above.` when you sent the PNG into the chat.
+
+**Telegram on a terminal.** The unfenced inline message is written for a surface
+that renders it. A terminal does not: copying it out is line-based, the blank
+lines that separate the paragraphs are lost, and the message lands in Telegram
+as one wall of text with no breathing room. So when you are answering in a
+terminal, the inline section is for **reading and approving** the wording, and
+the file is what gets **copied**:
+
+- Keep the `telegram-msg.txt` you already wrote for the checker in step 5. Do
+  not delete it and do not put it anywhere a cleanup sweeps before the user has
+  sent the message.
+- Print its absolute path on its own line above both sections:
+  `Telegram source: <absolute path>`
+- Say nothing else about it. The user opens that file and copies from there, so
+  every blank line arrives intact.
+
+On a chat surface that renders the message (Hermes Telegram), the inline text
+copies correctly and this line is unnecessary; do not add it there.
 
 ### Links, images, code in the source
 - **URLs** → Discord `[label](url)`; Telegram bare URL.
