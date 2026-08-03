@@ -200,13 +200,17 @@ are narrow and a dash reads as a hyphenated word at card size.
   Use whatever your runtime actually offers for this. If it offers nothing, say
   so and fall back to the path. Never report a card as sent when only the file
   exists.
-- **Telegram lossless-delivery rule:** always send maintenance/status-card PNGs
-  through Telegram as documents, never as native photo bubbles. Include the
-  literal `[[as_document]]` directive in the same response as the `MEDIA:` path
-  so Hermes routes the untouched full-resolution PNG through Telegram
-  `sendDocument`. The directive applies to every media path in that response,
-  so do not mix preview-only images into the same delivery. Do not resize or ZIP
-  the PNG unless the user explicitly asks for an alternate format.
+- **Hermes Telegram lossless-delivery rule:** apply this only when the current
+  runtime is a Hermes Telegram chat and the agent itself is uploading the card
+  into that chat. Include the literal `[[as_document]]` directive in the same
+  response as the `MEDIA:` path so Hermes routes the untouched full-resolution
+  PNG through Telegram `sendDocument`, never a native photo bubble. The directive
+  applies to every media path in that response, so do not mix preview-only images
+  into the same delivery. Do not resize or ZIP the PNG unless the user explicitly
+  asks for an alternate format. **Do not emit `[[as_document]]` or `MEDIA:` in
+  Claude Code, a plain terminal, or any non-Hermes runtime:** those surfaces do
+  not deliver the attachment; follow the terminal rule below and print the
+  absolute PNG path instead.
 - **A terminal** (Claude Code, plain CLI): print the **absolute** path, since the
   user picks it in a file dialog. Step 5 says where that line goes.
 
