@@ -20,10 +20,11 @@ finished message themselves. Preserve native formatting on both platforms:
 
 - **Discord** → output standard Discord markdown.
 - **Telegram** → output normal bold entities/markdown on a rendering surface such
-  as Hermes Telegram. Native Telegram formatting survives copy-paste **there**;
-  it does not survive a copy out of a terminal, which loses the blank lines
-  between paragraphs (see step 5, "Telegram on a terminal"). Never replace
-  letters with Unicode mathematical-bold characters.
+  as Hermes Telegram, where native Telegram formatting survives copy-paste. On a
+  terminal it does not: the reply is rendered as markdown, which collapses the
+  blank lines between paragraphs, so there the message ships in a fence (step 5,
+  "Fencing the Telegram message"). Never replace letters with Unicode
+  mathematical-bold characters.
 
 ## Runtime (any harness)
 
@@ -37,9 +38,6 @@ with a terminal + file-writing tool. Two conventions:
   contain `$(...)`, backticks, or `|` that the shell would execute. Always write
   the text to a temp file with your file tool, then pass `--file <path>` to
   `lede.py` (or pipe via stdin). The commands below only ever carry a filename.
-  One exception: on a terminal the Telegram message file is handed to the user
-  and must outlive the run, so it goes somewhere durable, not in scratch (step
-  5, "Where that file goes").
 
 ## Inputs
 
@@ -98,8 +96,9 @@ Short fixed facts may match verbatim. See `references/formatting.md`.
 **Telegram:** use `**normal bold**` for the title, headers, and key terms; use
 literal `-` list markers; use 2–4 meaningful emoji accents for a normal post; and
 use **bare URLs**. Do not use `##` headings, `•` list markers, HTML tags, or Unicode
-mathematical-bold glyphs. Emit Telegram as ordinary rendered text, not a code
-block, so the user copies native formatting rather than raw markup.
+mathematical-bold glyphs. Whether the finished message is emitted as ordinary
+rendered text or inside a fence is a surface decision, made at emit time (step
+5, "Fencing the Telegram message"); it changes nothing about how you write it.
 
 ### 3. Mandatory editorial anti-slop review
 
@@ -227,9 +226,7 @@ copies and that repo's never drift.
 The checker rejects generic label stacks, unsupported urgency, em dashes,
 malformed bold markers, Unicode mathematical-bold glyphs, `•` list markers, and whole-message code/quote wrappers. Telegram count strips
 supported formatting markers first, then counts UTF-16 units in the rendered
-text. Write each message to a file. On a terminal `telegram-msg.txt` is not
-throwaway: the user copies the message out of it (see "Telegram on a terminal"
-below), so write it somewhere durable and keep it.
+text. Write each message to a temp file:
 
 ```bash
 python "<skill-dir>/scripts/lede.py" check discord  --file discord-msg.txt
@@ -249,54 +246,53 @@ Emit two clearly labeled sections in this exact order:
 
 1. Write `**Discord**` as a title on its own line **outside and above** the fenced
    block, then put only the copyable Discord message inside the fence.
-2. Write `**Telegram**` as a title on its own line, add one blank line, then emit
-   the copyable Telegram message as **ordinary rendered text with no fence**.
+2. Write `**Telegram**` as a title on its own line, then the copyable Telegram
+   message. **Fence it or not depending on the surface** — see "Fencing the
+   Telegram message" below. Get this wrong and the message the user sends is
+   ruined, so decide it deliberately, every run.
 
 The platform title must never appear inside either copyable message. Discord's
 message stays fenced so its markdown source remains literal; use `~~~` if the
-message itself contains ```` ``` ````. **Never fence, quote, indent, or wrap the
-Telegram message in inline code.** Telegram preserves a copied fenced block as
-preformatted/code text, which breaks the intended paste-and-send result. The
-platform titles are mandatory; never rely on output order to identify them.
-Apart from these titles, include no counts or commentary. The only other lines
-allowed are handover/action lines, and they all go **above** both sections,
-never inside a message, in this order:
+message itself contains ```` ``` ````. The platform titles are
+mandatory; never rely on output order to identify them.
+Apart from these titles, include no counts or commentary. Add an extra line only
+when something needs action: an over-limit split, unresolved Vale alerts, or a
+card from step 4b. Those lines go **above** both sections and never inside a
+message: `Attach: <absolute path>` on a terminal, or `Attached above.` when you
+sent the PNG into the chat.
 
-1. `Telegram source: <absolute path>` — on a terminal, always (see below).
-2. `Attach: <absolute path>` on a terminal, or `Attached above.` when you sent
-   the PNG into the chat — whenever step 4b produced a card.
-3. An over-limit split note or unresolved Vale alerts, if either applies.
+### Fencing the Telegram message
 
-**Telegram on a terminal.** The unfenced inline message is written for a surface
-that renders it *and lets you copy the rendered text*. A terminal renders it but
-gives you back only what is on screen, and a markdown renderer collapses the
-blank lines between prose paragraphs. So the message the user copies out of the
-terminal arrives in Telegram as one wall of text with no breathing room. This is
-also why Discord needs no such remedy: its message sits in a fence, and fenced
-content is reproduced verbatim, blank lines included. The unfenced Telegram
-message is the only one that loses them.
+The Telegram message is prose with blank lines between its paragraphs, and those
+blank lines are the whole point: they are what makes it readable in the channel.
+Whether they survive to the user's clipboard depends entirely on the surface, so
+the rule is not "always fence" or "never fence":
 
-On a terminal, therefore, the inline section is for **reading and approving**
-the wording, and the file is what gets **copied**:
+- **A chat surface that renders the message for the user** (Hermes Telegram, or
+  any harness whose reply arrives as a real Telegram message): **no fence.** The
+  reply is already a Telegram message, so its bold is a real Telegram entity and
+  forwarding or copying it carries the formatting. Fencing here would send the
+  message as preformatted/code text and ruin it.
+- **A terminal, or any surface that renders your reply as markdown**
+  (Claude Code, plain CLI): **fence it**, exactly like Discord's, and put only
+  the message inside.
 
-- Keep the `telegram-msg.txt` you wrote for the checker in step 5 and print its
-  absolute path on its own line above both sections:
-  `Telegram source: <absolute path>`
-- Say nothing else about it. The user opens that file and copies from there, so
-  every blank line arrives intact.
+**Why a terminal needs the fence.** A markdown renderer collapses blank lines
+between prose paragraphs. Unfenced, the paragraphs are already single-spaced on
+screen *before the user copies anything*, so the message they paste into
+Telegram is one wall of text with no breathing room. Fenced content is rendered
+verbatim, blank lines included. This is not theory and not console-specific:
+Discord's message has never had this problem on the same terminals, and the only
+difference is the fence. The old "never fence Telegram" rule was written for the
+rendering-surface case and silently broke every terminal run.
 
-**Where that file goes.** Somewhere the user can still open after the run: the
-current working directory, or an output folder they named. **Not** the harness's
-scratch/temp area — those are swept, and a dead path defeats the whole point.
-This one file is the exception to the "temp file" convention in Runtime above;
-the Discord draft and any lint input may stay temporary.
+**When you cannot tell which surface you are on, fence it.** A fence the user
+did not need is one extra pair of lines to skip past; a missing one costs them
+the message.
 
-**Which surface am I on?** Only a chat surface that renders the message for the
-user — Hermes Telegram, or any harness whose reply appears as a real Telegram
-message — copies correctly; there, skip the `Telegram source:` line entirely.
-Everywhere else, including any case you are unsure about, take the terminal
-behaviour and write the file. A file the user did not need costs one line; a
-missing one costs them the message.
+The fence is presentation only. It never goes into `telegram-msg.txt` — the
+checker still rejects a message that is itself wrapped in a code block, and that
+check stays correct.
 
 ### Links, images, code in the source
 - **URLs** → Discord `[label](url)`; Telegram bare URL.

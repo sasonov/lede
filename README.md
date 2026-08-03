@@ -18,13 +18,16 @@ fact brief, then independently writes and lints two platform-specific messages:
   Renders when you paste and send.
 - **Telegram:** native bold + emoji + `-` bullets + bare URLs. The Telegram
   rendering surface creates normal formatting entities that survive this
-  workflow's copy-paste. On a terminal it hands you the message as a file
-  instead, because copying unfenced text out of a terminal drops the blank
-  lines between paragraphs. Unicode mathematical bold is forbidden.
+  workflow's copy-paste. On a terminal the message comes in a fence instead,
+  because a markdown renderer collapses the blank lines between paragraphs and
+  you would copy an already-flattened message. Unicode mathematical bold is
+  forbidden.
 
 You copy each message and send it into the channel yourself. Discord is shown in
 a fenced block so its markdown stays literal. Telegram is shown as ordinary
-rendered text, never as a code block, so native formatting is preserved.
+rendered text where the reply itself is a Telegram message, and in a fence on a
+terminal, where a markdown renderer would otherwise eat the blank lines between
+its paragraphs before you ever copy them.
 
 ## Requirements
 
